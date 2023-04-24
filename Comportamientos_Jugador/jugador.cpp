@@ -14,6 +14,8 @@ ComportamientoJugador::ComportamientoJugador(unsigned int size) : Comportamiento
 }
 
 
+
+
 //THINK------------------------------------------------------------------------------------------------------------------
 
 //movimiento caballo
@@ -34,52 +36,55 @@ Action ComportamientoJugador::think(Sensores sensores){
 
 	// Incluir aquí el comportamiento del agente jugador
 
-	if(!hayPlan){
-		//invocamos  el método de búsqueda
-		cout << "Calculando un nuevo plan" << endl;
+	if(sensores.nivel != 4){
+		if(!hayPlan){
+			//invocamos  el método de búsqueda
+			cout << "Calculando un nuevo plan" << endl;
 
-		//estado actual
-		c_state.jugador.f = sensores.posF;
-		c_state.jugador.c = sensores.posC;
-		c_state.jugador.brujula = sensores.sentido;
-		c_state.sonambulo.f = sensores.SONposF;
-		c_state.sonambulo.c = sensores.SONposC;
-		c_state.sonambulo.brujula = sensores.SONsentido;
-		
-		//objetivo
-		goal.f = sensores.destinoF;
-		goal.c = sensores.destinoC;
+			//estado actual
+			c_state.jugador.f = sensores.posF;
+			c_state.jugador.c = sensores.posC;
+			c_state.jugador.brujula = sensores.sentido;
+			c_state.sonambulo.f = sensores.SONposF;
+			c_state.sonambulo.c = sensores.SONposC;
+			c_state.sonambulo.brujula = sensores.SONsentido;
+			
+			//objetivo
+			goal.f = sensores.destinoF;
+			goal.c = sensores.destinoC;
 
-		//obtencion del plan segun nivel
-		switch(sensores.nivel){
-			case 0: plan = AnchuraSoloJugador();
-			break;
-			case 1: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
-			break;
-			case 2: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
-			break;
-			case 3: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
-			break;
-			case 4: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
-			break;
+			//obtencion del plan segun nivel
+			switch(sensores.nivel){
+				case 0: plan = AnchuraSoloJugador();
+				break;
+				case 1: plan = AnchuraSonambulo();
+				break;
+				case 2: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
+				break;
+				case 3: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
+				break;
+			}
+			if(plan.size() > 0){
+				VisualizaPlan();
+				hayPlan = true;
+			}
 		}
-		if(plan.size() > 0){
-			VisualizaPlan();
-			hayPlan = true;
+
+		if(hayPlan and plan.size() > 0){
+			cout << "Ejecutando la siguiente acción del plan" << endl;
+			accion = plan.front();
+			plan.pop_front();
 		}
+
+		if(plan.size() == 0){
+			cout << "Se completó el plan" << endl;
+			hayPlan = false;
+		}
+
+	}else{
+		cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
 	}
 
-	if(hayPlan and plan.size() > 0){
-		cout << "Ejecutando la siguiente acción del plan" << endl;
-		accion = plan.front();
-		plan.pop_front();
-	}
-
-	if(plan.size() == 0){
-		cout << "Se completó el plan" << endl;
-		hayPlan = false;
-	}
-	
 	return accion;
 }
 
@@ -100,7 +105,7 @@ void ComportamientoJugador::AnulaMatriz(){
 //visualiza el plan en el simulador
 void ComportamientoJugador::VisualizaPlan(){
 	AnulaMatriz();
-	stateN0 cst = c_state;
+	state cst = c_state;
 	auto it = plan.begin();
 	while(it != plan.end()){
 		switch (*it){
@@ -130,48 +135,12 @@ void ComportamientoJugador::VisualizaPlan(){
 }
 
 
+
 //___________________________________________Buesquedas___________________________________________
 
 //-----------------------------------------------N0-----------------------------------------------
 
-struct stateN0{
-  ubicacion jugador;
-  ubicacion sonambulo;
 
-  bool operator== (const stateN0& x) const{
-    if(jugador == x.jugador and sonambulo.f ==  x.sonambulo.f and sonambulo.c == x.sonambulo.c){
-      return true;
-    }else{
-      return false;
-    }
-  }
-};
-
-struct nodoN0{
-  stateN0 st;
-  list<Action> secuencia;
-
-  bool operator== (const nodoN0& n) const{
-    return (st == n.st);
-  }
-
-  bool operator< (const nodoN0& n) const{
-    if(st.jugador.f < n.st.jugador.f) return true;
-    else if(st.jugador.f == n.st.jugador.f and st.jugador.c < n.st.jugador.c) return true;
-    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula < n.st.jugador.brujula) return true;
-    else return false;
-  }
-
-};
-
-//busca un estado en una lista de estados
-// bool ComportamientoJugador::Find(const stateN0& item, const list<nodoN0>& lista){
-// 	auto it = lista.begin();
-// 	while(it != lista.end() and !(it->st == item)){
-// 		it++;
-// 	}
-// 	return (it != lista.end());
-// }
 
 //obtenfo cual es la casilla si abanzo segun su ubicacion
 ubicacion ComportamientoJugador::NextCasilla(const ubicacion& pos){
@@ -198,9 +167,9 @@ ubicacion ComportamientoJugador::NextCasilla(const ubicacion& pos){
 	return next;
 }
 
-//aplica una accion a un estado y obtiene otro
-stateN0 ComportamientoJugador::apply(const Action& a, const stateN0& st){
-	stateN0 st_result = st;
+//aplica una accion a un estado y obtiene otro		{modificacion para n1}
+state ComportamientoJugador::apply(const Action& a, const state& st){
+	state st_result = st;
 	ubicacion sig_ubicacion;
 	switch(a){
 		case actFORWARD:
@@ -212,6 +181,16 @@ stateN0 ComportamientoJugador::apply(const Action& a, const stateN0& st){
 		break;
 		case actTURN_R:
 			st_result.jugador.brujula = static_cast<Orientacion>((st.jugador.brujula + 2) % 8);
+		break;
+		case actSON_FORWARD:
+			sig_ubicacion = NextCasilla(st.sonambulo);
+			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion == st.jugador)) st_result.sonambulo = sig_ubicacion;
+		break;
+		case actSON_TURN_SL:
+			st_result.sonambulo.brujula = static_cast<Orientacion>((st.sonambulo.brujula + 7) % 8);
+		break;
+		case actSON_TURN_SR:
+			st_result.sonambulo.brujula = static_cast<Orientacion>((st.sonambulo.brujula + 1) % 8);
 		break;
 	}
 	return st_result;
@@ -259,6 +238,178 @@ list<Action> ComportamientoJugador::AnchuraSoloJugador(){
 				frontier.push_back(child_turnr);
 			}
 		}
+
+		if(!SolutionFound and !frontier.empty()){
+			current_node = frontier.front();
+			while(!frontier.empty() and explored.find(current_node) != explored.end()){
+				frontier.pop_front();
+				current_node = frontier.front();
+			}
+		} 
+
+	}
+
+	if(SolutionFound) plan = current_node.secuencia;
+
+	return plan;
+}
+
+//-----------------------------------------------N1-----------------------------------------------
+
+//true si el sonambulo se encuentra en el campo de vision del jugador
+bool ComportamientoJugador::SonambuloEnVision(const state& st){
+	bool sonambuloVisto = false;
+	switch (st.jugador.brujula){
+		case norte:
+			if(st.sonambulo.c == st.jugador.c and (st.sonambulo.f == st.jugador.f-1 or st.sonambulo.f == st.jugador.f-2 or st.sonambulo.f == st.jugador.f-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c-1 and (st.sonambulo.f == st.jugador.f-1 or st.sonambulo.f == st.jugador.f-2 or st.sonambulo.f == st.jugador.f-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c+1 and (st.sonambulo.f == st.jugador.f-1 or st.sonambulo.f == st.jugador.f-2 or st.sonambulo.f == st.jugador.f-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c-2 and (st.sonambulo.f == st.jugador.f-2 or st.sonambulo.f == st.jugador.f-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c+2 and (st.sonambulo.f == st.jugador.f-2 or st.sonambulo.f == st.jugador.f-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c-3 and st.sonambulo.f == st.jugador.f-3){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c+3 and st.sonambulo.f == st.jugador.f-3){
+				sonambuloVisto = true;
+			}else{
+				sonambuloVisto = false;
+			}
+		break;
+		case este:
+			if(st.sonambulo.f == st.jugador.f and (st.sonambulo.c == st.jugador.c+1 or st.sonambulo.c == st.jugador.c+2 or st.sonambulo.c == st.jugador.c+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f-1 and (st.sonambulo.c == st.jugador.c+1 or st.sonambulo.c == st.jugador.c+2 or st.sonambulo.c == st.jugador.c+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f+1 and (st.sonambulo.c == st.jugador.c+1 or st.sonambulo.c == st.jugador.c+2 or st.sonambulo.c == st.jugador.c+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f-2 and (st.sonambulo.c == st.jugador.c+2 or st.sonambulo.c == st.jugador.c+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f+2 and (st.sonambulo.c == st.jugador.c+2 or st.sonambulo.c == st.jugador.c+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f-3 and st.sonambulo.c == st.jugador.c+3){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f+3 and st.sonambulo.c == st.jugador.c+3){
+				sonambuloVisto = true;
+			}else{
+				sonambuloVisto = false;
+			}
+		break;
+		case sur:
+		if(st.sonambulo.c == st.jugador.c and (st.sonambulo.f == st.jugador.f+1 or st.sonambulo.f == st.jugador.f+2 or st.sonambulo.f == st.jugador.f+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c-1 and (st.sonambulo.f == st.jugador.f+1 or st.sonambulo.f == st.jugador.f+2 or st.sonambulo.f == st.jugador.f+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c+1 and (st.sonambulo.f == st.jugador.f+1 or st.sonambulo.f == st.jugador.f+2 or st.sonambulo.f == st.jugador.f+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c-2 and (st.sonambulo.f == st.jugador.f+2 or st.sonambulo.f == st.jugador.f+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c+2 and (st.sonambulo.f == st.jugador.f+2 or st.sonambulo.f == st.jugador.f+3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c-3 and st.sonambulo.f == st.jugador.f+3){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.c == st.jugador.c+3 and st.sonambulo.f == st.jugador.f+3){
+				sonambuloVisto = true;
+			}else{
+				sonambuloVisto = false;
+			}
+		break;
+		case oeste:
+		if(st.sonambulo.f == st.jugador.f and (st.sonambulo.c == st.jugador.c-1 or st.sonambulo.c == st.jugador.c-2 or st.sonambulo.c == st.jugador.c-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f-1 and (st.sonambulo.c == st.jugador.c-1 or st.sonambulo.c == st.jugador.c-2 or st.sonambulo.c == st.jugador.c-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f+1 and (st.sonambulo.c == st.jugador.c-1 or st.sonambulo.c == st.jugador.c-2 or st.sonambulo.c == st.jugador.c-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f-2 and (st.sonambulo.c == st.jugador.c-2 or st.sonambulo.c == st.jugador.c-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f+2 and (st.sonambulo.c == st.jugador.c-2 or st.sonambulo.c == st.jugador.c-3)){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f-3 and st.sonambulo.c == st.jugador.c-3){
+				sonambuloVisto = true;
+			}else if(st.sonambulo.f == st.jugador.f+3 and st.sonambulo.c == st.jugador.c-3){
+				sonambuloVisto = true;
+			}else{
+				sonambuloVisto = false;
+			}
+		break;
+	}
+	return sonambuloVisto;
+}
+
+//busqueda en anchura obteniendo lista de acciones
+list<Action> ComportamientoJugador::AnchuraSonambulo(){
+	nodoN1 current_node;
+	list<nodoN1> frontier;
+	set<nodoN1> explored;
+	list<Action> plan;
+	current_node.st = c_state;
+	bool SolutionFound = (current_node.st.jugador.f == goal.f and current_node.st.jugador.c == goal.c);
+
+	frontier.push_back(current_node);
+
+	while(!frontier.empty() and !SolutionFound){
+		frontier.pop_front();
+		explored.insert(current_node);
+		
+		if(SonambuloEnVision(current_node.st)){
+			//Generar hijo actSON_FORWARD
+			nodoN1 child_SONforward = current_node;
+			child_SONforward.st = apply(actSON_FORWARD, current_node.st);
+			if(child_SONforward.st.sonambulo.f == goal.f and child_SONforward.st.sonambulo.c == goal.c){
+				child_SONforward.secuencia.push_back(actSON_FORWARD);
+				current_node = child_SONforward;
+				SolutionFound = true;
+			}else if(explored.find(child_SONforward) == explored.end()){
+				child_SONforward.secuencia.push_back(actSON_FORWARD);
+				frontier.push_back(child_SONforward);
+			}
+
+			if(!SolutionFound){
+				//Generar hijo actSON_TURN_SL
+				nodoN1 child_SONturnl = current_node;
+				child_SONturnl.st = apply(actSON_TURN_SL,current_node.st);
+				if(explored.find(child_SONturnl) == explored.end()){
+					child_SONturnl.secuencia.push_back(actSON_TURN_SL);
+					frontier.push_back(child_SONturnl);
+				}
+				//Generar hijo actSON_TURN_SR
+				nodoN1 child_SONturnr = current_node;
+				child_SONturnr.st = apply(actSON_TURN_SR,current_node.st);
+				if(explored.find(child_SONturnr) == explored.end()){
+					child_SONturnr.secuencia.push_back(actSON_TURN_SR);
+					frontier.push_back(child_SONturnr);
+				}
+			}
+		}else{
+				//Generar hijo actForward
+			nodoN1 child_forward = current_node;
+			child_forward.st = apply(actFORWARD, current_node.st);
+			if(explored.find(child_forward) == explored.end()){
+				child_forward.secuencia.push_back(actFORWARD);
+				frontier.push_back(child_forward);
+			}
+
+			//Generar hijo actTurn_L
+			nodoN1 child_turnl = current_node;
+			child_turnl.st = apply(actTURN_L,current_node.st);
+			if(explored.find(child_turnl) == explored.end()){
+				child_turnl.secuencia.push_back(actTURN_L);
+				frontier.push_back(child_turnl);
+			}
+			//Generar hijo actTurn_R
+			nodoN1 child_turnr = current_node;
+			child_turnr.st = apply(actTURN_R,current_node.st);
+			if(explored.find(child_turnr) == explored.end()){
+				child_turnr.secuencia.push_back(actTURN_R);
+				frontier.push_back(child_turnr);
+			}
+			
+		}
+		
 
 		if(!SolutionFound and !frontier.empty()){
 			current_node = frontier.front();
