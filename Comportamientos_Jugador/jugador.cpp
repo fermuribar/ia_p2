@@ -174,7 +174,7 @@ state ComportamientoJugador::apply(const Action& a, const state& st){
 	switch(a){
 		case actFORWARD:
 			sig_ubicacion = NextCasilla(st.jugador);
-			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion == st.sonambulo)) st_result.jugador = sig_ubicacion;
+			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion.f == st.sonambulo.f and sig_ubicacion.c == st.sonambulo.c)) st_result.jugador = sig_ubicacion;
 		break;
 		case actTURN_L:
 			st_result.jugador.brujula = static_cast<Orientacion>((st.jugador.brujula + 6) % 8);
@@ -184,7 +184,7 @@ state ComportamientoJugador::apply(const Action& a, const state& st){
 		break;
 		case actSON_FORWARD:
 			sig_ubicacion = NextCasilla(st.sonambulo);
-			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion == st.jugador)) st_result.sonambulo = sig_ubicacion;
+			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion.f == st.jugador.f and sig_ubicacion.c == st.jugador.c)) st_result.sonambulo = sig_ubicacion;
 		break;
 		case actSON_TURN_SL:
 			st_result.sonambulo.brujula = static_cast<Orientacion>((st.sonambulo.brujula + 7) % 8);
@@ -347,7 +347,7 @@ list<Action> ComportamientoJugador::AnchuraSonambulo(){
 	set<nodoN1> explored;
 	list<Action> plan;
 	current_node.st = c_state;
-	bool SolutionFound = (current_node.st.jugador.f == goal.f and current_node.st.jugador.c == goal.c);
+	bool SolutionFound = (current_node.st.sonambulo.f == goal.f and current_node.st.sonambulo.c == goal.c);
 
 	frontier.push_back(current_node);
 
