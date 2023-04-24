@@ -5,7 +5,7 @@
 
 #include <list>
 
-//Estado
+//Estados por niveles
 struct stateN0{
   ubicacion jugador;
   ubicacion sonambulo;
@@ -19,7 +19,7 @@ struct stateN0{
   }
 };
 
-//Nodo
+//Nodos por niveles
 
 struct nodoN0{
   stateN0 st;
@@ -62,7 +62,7 @@ class ComportamientoJugador : public Comportamiento {
       //borra matriz
     void AnulaMatriz();
       //visualiza el plan en el simulador
-    void VisualizaPlan(const stateN0& st, const list<Action>& plan);
+    void VisualizaPlan();
 
     //--------------Busqueda y subfunciones-----------------------------------
       //busca un estado en una lista de estados

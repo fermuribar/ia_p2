@@ -26,16 +26,11 @@ list<Action> caballito(){
 	return secuencia;
 }
 
-//primera aproximacion a la implementacion de la busqueda en anchura;
-
-
-
 // Este es el método principal que se piden en la practica.
 // Tiene como entrada la información de los sensores y devuelve la acción a realizar.
 // Para ver los distintos sensores mirar fichero "comportamiento.hpp"
 Action ComportamientoJugador::think(Sensores sensores){
 	Action accion= actIDLE;
-
 
 	// Incluir aquí el comportamiento del agente jugador
 
@@ -56,7 +51,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 		goal.c = sensores.destinoC;
 
 		plan = AnchuraSoloJugador();
-		VisualizaPlan(c_state,plan);
+		VisualizaPlan();
 		hayPlan = true;
 	}
 
@@ -71,7 +66,6 @@ Action ComportamientoJugador::think(Sensores sensores){
 		hayPlan = false;
 	}
 	
-
 	return accion;
 }
 
@@ -90,9 +84,9 @@ void ComportamientoJugador::AnulaMatriz(){
 	}
 }
 //visualiza el plan en el simulador
-void ComportamientoJugador::VisualizaPlan(const stateN0& st, const list<Action>& plan){
+void ComportamientoJugador::VisualizaPlan(){
 	AnulaMatriz();
-	stateN0 cst = st;
+	stateN0 cst = c_state;
 	auto it = plan.begin();
 	while(it != plan.end()){
 		switch (*it){
@@ -138,34 +132,22 @@ bool ComportamientoJugador::Find(const stateN0& item, const list<nodoN0>& lista)
 //obtenfo cual es la casilla si abanzo segun su ubicacion
 ubicacion ComportamientoJugador::NextCasilla(const ubicacion& pos){
 	ubicacion next = pos;
-	switch (pos.brujula)	{
-		case norte:
-			next.f--;
+	switch (pos.brujula){
+		case norte: next.f--;
 		break;
-		case noreste:
-			next.f--;
-			next.c++;
+		case noreste: next.f--; next.c++;
 		break;
-		case este:
-			next.c++;
+		case este: next.c++; 
 		break;
-		case sureste:
-			next.f++;
-			next.c++;
+		case sureste: next.f++; next.c++;
 		break;
-		case sur:
-			next.f++;
+		case sur: next.f++; 
 		break;
-		case suroeste:
-			next.f++;
-			next.c--;
+		case suroeste: next.f++; next.c--;
 		break;
-		case oeste:
-			next.c--;
+		case oeste: next.c--;
 		break;
-		case noroeste:
-			next.f--;
-			next.c--;
+		case noroeste: next.f--; next.c--;
 		break;
 	}
 
@@ -176,7 +158,7 @@ ubicacion ComportamientoJugador::NextCasilla(const ubicacion& pos){
 stateN0 ComportamientoJugador::apply(const Action& a, const stateN0& st){
 	stateN0 st_result = st;
 	ubicacion sig_ubicacion;
-	switch (a){
+	switch(a){
 		case actFORWARD:
 			sig_ubicacion = NextCasilla(st.jugador);
 			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion == st.sonambulo)) st_result.jugador = sig_ubicacion;
@@ -195,7 +177,7 @@ stateN0 ComportamientoJugador::apply(const Action& a, const stateN0& st){
 list<Action> ComportamientoJugador::AnchuraSoloJugador(){
 	nodoN0 current_node;
 	list<nodoN0> frontier;
-	list<nodoN0> explored;
+	set<nodoN0> explored;
 	list<Action> plan;
 	current_node.st = c_state;
 	bool SolutionFound = (current_node.st.jugador.f == goal.f and current_node.st.jugador.c == goal.c);
@@ -204,7 +186,7 @@ list<Action> ComportamientoJugador::AnchuraSoloJugador(){
 
 	while(!frontier.empty() and !SolutionFound){
 		frontier.pop_front();
-		explored.push_back(current_node);
+		explored.insert(current_node);
 		//Generar hijo actForward
 		nodoN0 child_forward = current_node;
 		child_forward.st = apply(actFORWARD, current_node.st);
@@ -212,7 +194,7 @@ list<Action> ComportamientoJugador::AnchuraSoloJugador(){
 			child_forward.secuencia.push_back(actFORWARD);
 			current_node = child_forward;
 			SolutionFound = true;
-		}else if(!Find(child_forward.st,frontier) and !Find(child_forward.st,explored)){
+		}else if(explored.find(child_forward) == explored.end()){
 			child_forward.secuencia.push_back(actFORWARD);
 			frontier.push_back(child_forward);
 		}
@@ -221,22 +203,27 @@ list<Action> ComportamientoJugador::AnchuraSoloJugador(){
 			//Generar hijo actTurn_L
 			nodoN0 child_turnl = current_node;
 			child_turnl.st = apply(actTURN_L,current_node.st);
-			if(!Find(child_turnl.st,frontier) and !Find(child_turnl.st,explored)){
+			if(explored.find(child_turnl) == explored.end()){
 				child_turnl.secuencia.push_back(actTURN_L);
 				frontier.push_back(child_turnl);
 			}
 			//Generar hijo actTurn_R
 			nodoN0 child_turnr = current_node;
 			child_turnr.st = apply(actTURN_R,current_node.st);
-			if(!Find(child_turnr.st,frontier) and !Find(child_turnr.st,explored)){
+			if(explored.find(child_turnr) == explored.end()){
 				child_turnr.secuencia.push_back(actTURN_R);
 				frontier.push_back(child_turnr);
 			}
 		}
 
-		if(!SolutionFound and !frontier.empty()) current_node = frontier.front();
+		if(!SolutionFound and !frontier.empty()){
+			current_node = frontier.front();
+			while(!frontier.empty() and explored.find(current_node) != explored.end()){
+				frontier.pop_front();
+				current_node = frontier.front();
+			}
+		} 
 
-		
 	}
 
 	if(SolutionFound) plan = current_node.secuencia;
