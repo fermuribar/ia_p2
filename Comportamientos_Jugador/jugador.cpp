@@ -134,14 +134,44 @@ void ComportamientoJugador::VisualizaPlan(){
 
 //-----------------------------------------------N0-----------------------------------------------
 
+struct stateN0{
+  ubicacion jugador;
+  ubicacion sonambulo;
+
+  bool operator== (const stateN0& x) const{
+    if(jugador == x.jugador and sonambulo.f ==  x.sonambulo.f and sonambulo.c == x.sonambulo.c){
+      return true;
+    }else{
+      return false;
+    }
+  }
+};
+
+struct nodoN0{
+  stateN0 st;
+  list<Action> secuencia;
+
+  bool operator== (const nodoN0& n) const{
+    return (st == n.st);
+  }
+
+  bool operator< (const nodoN0& n) const{
+    if(st.jugador.f < n.st.jugador.f) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c < n.st.jugador.c) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula < n.st.jugador.brujula) return true;
+    else return false;
+  }
+
+};
+
 //busca un estado en una lista de estados
-bool ComportamientoJugador::Find(const stateN0& item, const list<nodoN0>& lista){
-	auto it = lista.begin();
-	while(it != lista.end() and !(it->st == item)){
-		it++;
-	}
-	return (it != lista.end());
-}
+// bool ComportamientoJugador::Find(const stateN0& item, const list<nodoN0>& lista){
+// 	auto it = lista.begin();
+// 	while(it != lista.end() and !(it->st == item)){
+// 		it++;
+// 	}
+// 	return (it != lista.end());
+// }
 
 //obtenfo cual es la casilla si abanzo segun su ubicacion
 ubicacion ComportamientoJugador::NextCasilla(const ubicacion& pos){
