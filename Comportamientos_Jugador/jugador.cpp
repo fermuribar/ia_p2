@@ -50,9 +50,23 @@ Action ComportamientoJugador::think(Sensores sensores){
 		goal.f = sensores.destinoF;
 		goal.c = sensores.destinoC;
 
-		plan = AnchuraSoloJugador();
-		VisualizaPlan();
-		hayPlan = true;
+		//obtencion del plan segun nivel
+		switch(sensores.nivel){
+			case 0: plan = AnchuraSoloJugador();
+			break;
+			case 1: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
+			break;
+			case 2: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
+			break;
+			case 3: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
+			break;
+			case 4: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
+			break;
+		}
+		if(plan.size() > 0){
+			VisualizaPlan();
+			hayPlan = true;
+		}
 	}
 
 	if(hayPlan and plan.size() > 0){
