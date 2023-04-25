@@ -100,6 +100,12 @@ class ComportamientoJugador : public Comportamiento {
       //busqueda en anchura para jugador y sonambulo obteniendo lista de acciones
     list<Action> AnchuraSonambulo();
 
+    //______N2______
+      //puntuacion segun accion y casilla
+    int puntuacion(const Action& a, const state& st);
+      //busqueda en anchura para jugador obteniendo lista de acciones dijkstra
+    list<Action> Dijkstra();
+
     // Declarar Variables de Estado___________________________________________
 
     list<Action> plan;  //Almacena el plan en ejecución

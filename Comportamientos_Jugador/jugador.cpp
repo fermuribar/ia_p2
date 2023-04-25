@@ -121,7 +121,7 @@ void ComportamientoJugador::VisualizaPlan(){
 			break;
 			case actSON_FORWARD:
 				cst.sonambulo = NextCasilla(cst.sonambulo);
-				mapaConPlan[cst.sonambulo.f][cst.sonambulo.c] = 1;
+				mapaConPlan[cst.sonambulo.f][cst.sonambulo.c] = 2;
 			break;
 			case actSON_TURN_SR:
 				cst.sonambulo.brujula = static_cast<Orientacion>((cst.sonambulo.brujula + 1) % 8);
@@ -384,33 +384,31 @@ list<Action> ComportamientoJugador::AnchuraSonambulo(){
 					frontier.push_back(child_SONturnr);
 				}
 			}
-		}else{
-				//Generar hijo actForward
-			nodoN1 child_forward = current_node;
-			child_forward.st = apply(actFORWARD, current_node.st);
-			if(explored.find(child_forward) == explored.end()){
-				child_forward.secuencia.push_back(actFORWARD);
-				frontier.push_back(child_forward);
-			}
-
-			//Generar hijo actTurn_L
-			nodoN1 child_turnl = current_node;
-			child_turnl.st = apply(actTURN_L,current_node.st);
-			if(explored.find(child_turnl) == explored.end()){
-				child_turnl.secuencia.push_back(actTURN_L);
-				frontier.push_back(child_turnl);
-			}
-			//Generar hijo actTurn_R
-			nodoN1 child_turnr = current_node;
-			child_turnr.st = apply(actTURN_R,current_node.st);
-			if(explored.find(child_turnr) == explored.end()){
-				child_turnr.secuencia.push_back(actTURN_R);
-				frontier.push_back(child_turnr);
-			}
-			
 		}
-		
 
+		//Generar hijo actForward
+		nodoN1 child_forward = current_node;
+		child_forward.st = apply(actFORWARD, current_node.st);
+		if(explored.find(child_forward) == explored.end()){
+			child_forward.secuencia.push_back(actFORWARD);
+			frontier.push_back(child_forward);
+		}
+
+		//Generar hijo actTurn_L
+		nodoN1 child_turnl = current_node;
+		child_turnl.st = apply(actTURN_L,current_node.st);
+		if(explored.find(child_turnl) == explored.end()){
+			child_turnl.secuencia.push_back(actTURN_L);
+			frontier.push_back(child_turnl);
+		}
+		//Generar hijo actTurn_R
+		nodoN1 child_turnr = current_node;
+		child_turnr.st = apply(actTURN_R,current_node.st);
+		if(explored.find(child_turnr) == explored.end()){
+			child_turnr.secuencia.push_back(actTURN_R);
+			frontier.push_back(child_turnr);
+		}
+			
 		if(!SolutionFound and !frontier.empty()){
 			current_node = frontier.front();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
@@ -424,4 +422,28 @@ list<Action> ComportamientoJugador::AnchuraSonambulo(){
 	if(SolutionFound) plan = current_node.secuencia;
 
 	return plan;
+}
+
+//-----------------------------------------------N2-----------------------------------------------
+
+//puntuacion segun accion y casilla
+int ComportamientoJugador::puntuacion(const Action& a, const state& st){
+	switch(a){
+		case actFORWARD:
+			switch(mapaResultado[st.jugador.f][st.jugador.c]){
+				case 'A': return ()
+				break;
+			}
+		break;
+		case actSON_FORWARD:
+		break;
+		case actTURN_L: case actTURN_R:
+		break;
+		case actSON_TURN_SL: case actSON_TURN_SR:
+		break;
+	}
+}
+//busqueda en anchura para jugador obteniendo lista de acciones dijkstra
+list<Action> ComportamientoJugador::Dijkstra(){
+
 }
