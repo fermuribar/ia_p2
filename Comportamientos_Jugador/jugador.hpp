@@ -58,6 +58,44 @@ struct nodoN1{
 
 };
 
+struct nodoN2{
+  state st;
+  list<Action> secuencia;
+  int coste;
+  bool bikini_j, bikini_s, zapatillas_j, zapatillas_s;
+
+  bool operator== (const nodoN2& n) const{
+    return (st == n.st);
+  }
+
+  bool operator< (const nodoN2& n) const{
+    if(st.jugador.f < n.st.jugador.f) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c < n.st.jugador.c) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula < n.st.jugador.brujula) return true;
+    else return false;
+  }
+
+  bool operator> (const nodoN2& n) const{
+    if(coste > n.coste) return true;
+    else return false;
+  }
+
+  // const nodoN2& operator=(const nodoN2& n){
+  //   auto it = n.secuencia.begin();
+  //   st = n.st;
+  //   while(it != n.secuencia.end()){
+  //     secuencia.push_back((*it));
+  //     it++;
+  //   }
+  //   coste = n.coste;
+  //   bikini_j = n.bikini_j;
+  //   bikini_s = n.bikini_s;
+  //   zapatillas_j = n.zapatillas_j;
+  //   zapatillas_s = n.zapatillas_s;
+  // }
+
+};
+
 class ComportamientoJugador : public Comportamiento {
   public:
     ComportamientoJugador(unsigned int size);
@@ -102,7 +140,7 @@ class ComportamientoJugador : public Comportamiento {
 
     //______N2______
       //puntuacion segun accion y casilla
-    int puntuacion(const Action& a, const state& st);
+    nodoN2 Aply_puntuacion(const Action& a, const nodoN2& no);
       //busqueda en anchura para jugador obteniendo lista de acciones dijkstra
     list<Action> Dijkstra();
 
