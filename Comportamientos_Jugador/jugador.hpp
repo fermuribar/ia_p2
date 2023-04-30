@@ -79,21 +79,33 @@ struct nodoN2{
     if(coste > n.coste) return true;
     else return false;
   }
+};
 
-  // const nodoN2& operator=(const nodoN2& n){
-  //   auto it = n.secuencia.begin();
-  //   st = n.st;
-  //   while(it != n.secuencia.end()){
-  //     secuencia.push_back((*it));
-  //     it++;
-  //   }
-  //   coste = n.coste;
-  //   bikini_j = n.bikini_j;
-  //   bikini_s = n.bikini_s;
-  //   zapatillas_j = n.zapatillas_j;
-  //   zapatillas_s = n.zapatillas_s;
-  // }
+struct nodoN3{
+  state st;
+  list<Action> secuencia;
+  int coste;
+  int h;
+  bool bikini_j, bikini_s, zapatillas_j, zapatillas_s;
 
+  bool operator== (const nodoN3& n) const{
+    return (st == n.st);
+  }
+
+  bool operator< (const nodoN3& n) const{
+    if(st.jugador.f < n.st.jugador.f) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c < n.st.jugador.c) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula < n.st.jugador.brujula) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f < n.st.sonambulo.f) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and st.sonambulo.c < n.st.sonambulo.c) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and st.sonambulo.c == n.st.sonambulo.c and st.sonambulo.brujula < n.st.sonambulo.brujula) return true;
+    else return false;
+  }
+
+  bool operator> (const nodoN3& n) const{
+    if(coste+h > n.coste+n.h) return true;
+    else return false;
+  }
 };
 
 class ComportamientoJugador : public Comportamiento {
@@ -143,6 +155,14 @@ class ComportamientoJugador : public Comportamiento {
     nodoN2 Aply_puntuacion(const Action& a, const nodoN2& no);
       //busqueda en anchura para jugador obteniendo lista de acciones dijkstra
     list<Action> Dijkstra();
+
+    //______N3______
+      //calculo de la heuristica con las distancias del jugador al sonambulo y del sonambulo al objetivo
+    int heuristica(const nodoN3& no);
+      //puntuacion segun accion y casilla
+    nodoN3 Aply_puntuacion_heuristica(const Action& a, const nodoN3& no);
+      //busqueda en anchura para jugador obteniendo lista de acciones dijkstra
+    list<Action> A_estrella();
 
     // Declarar Variables de Estado___________________________________________
 
