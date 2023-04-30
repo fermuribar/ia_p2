@@ -244,7 +244,7 @@ list<Action> ComportamientoJugador::AnchuraSoloJugador(){
 			current_node = frontier.front();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
 				frontier.pop_front();
-				current_node = frontier.front();
+				if(!frontier.empty()) current_node = frontier.front();
 			}
 		} 
 
@@ -414,7 +414,7 @@ list<Action> ComportamientoJugador::AnchuraSonambulo(){
 			current_node = frontier.front();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
 				frontier.pop_front();
-				current_node = frontier.front();
+				if(!frontier.empty()) current_node = frontier.front();
 			}
 		} 
 
@@ -555,7 +555,7 @@ list<Action> ComportamientoJugador::Dijkstra(){
 			current_node = frontier.top();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
 				frontier.pop();
-				current_node = frontier.top();
+				if(!frontier.empty()) current_node = frontier.top();
 			}
 		}
 		
@@ -725,7 +725,7 @@ list<Action> ComportamientoJugador::A_estrella(){
 			current_node = frontier.top();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
 				frontier.pop();
-				current_node = frontier.top();
+				if(!frontier.empty()) current_node = frontier.top();
 			}
 		}
 	}
