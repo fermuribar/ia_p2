@@ -514,7 +514,10 @@ list<Action> ComportamientoJugador::Dijkstra(){
 	list<Action> plan;
 	current_node.st = c_state;
 	current_node.coste = 0;
-	current_node.bikini_j = current_node.bikini_s = current_node.zapatillas_j = current_node.zapatillas_s = false;
+	current_node.bikini_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'K') ? true : false;
+	current_node.bikini_s = (mapaResultado[current_node.st.sonambulo.f][current_node.st.sonambulo.c] == 'K') ? true : false;
+	current_node.zapatillas_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'D') ? true : false;
+	current_node.zapatillas_s = (mapaResultado[current_node.st.sonambulo.f][current_node.st.sonambulo.c] == 'D') ? true : false;
 	bool SolutionFound = (current_node.st.jugador.f == goal.f and current_node.st.jugador.c == goal.c);
 
 	frontier.push(current_node);
@@ -522,19 +525,16 @@ list<Action> ComportamientoJugador::Dijkstra(){
 	while(!frontier.empty() and !SolutionFound){
 		frontier.pop();
 		explored.insert(current_node);
-
-		//Generar hijo actForward
-		nodoN2 child_forward = current_node;
-		child_forward = Aply_puntuacion(actFORWARD, current_node);
-		if(child_forward.st.jugador.f == goal.f and child_forward.st.jugador.c == goal.c){
-			child_forward.secuencia.push_back(actFORWARD);
-			current_node = child_forward;
+		if(current_node.st.jugador.f == goal.f and current_node.st.jugador.c == goal.c){
 			SolutionFound = true;
-		}else if(explored.find(child_forward) == explored.end()){
-			child_forward.secuencia.push_back(actFORWARD);
-			frontier.push(child_forward);
-		}
-		if(!SolutionFound){
+		}else{
+			//Generar hijo actForward
+			nodoN2 child_forward = current_node;
+			child_forward = Aply_puntuacion(actFORWARD, current_node);
+			if(explored.find(child_forward) == explored.end()){
+				child_forward.secuencia.push_back(actFORWARD);
+				frontier.push(child_forward);
+			}
 			//Generar hijo actTurn_L
 			nodoN2 child_turnl = current_node;
 			child_turnl = Aply_puntuacion(actTURN_L,current_node);
@@ -657,7 +657,10 @@ list<Action> ComportamientoJugador::A_estrella(){
 	current_node.st = c_state;
 	current_node.coste = 0;
 	current_node.h = heuristica(current_node);
-	current_node.bikini_j = current_node.bikini_s = current_node.zapatillas_j = current_node.zapatillas_s = false;
+	current_node.bikini_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'K') ? true : false;
+	current_node.bikini_s = (mapaResultado[current_node.st.sonambulo.f][current_node.st.sonambulo.c] == 'K') ? true : false;
+	current_node.zapatillas_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'D') ? true : false;
+	current_node.zapatillas_s = (mapaResultado[current_node.st.sonambulo.f][current_node.st.sonambulo.c] == 'D') ? true : false;
 	bool SolutionFound = (current_node.st.sonambulo.f == goal.f and current_node.st.sonambulo.c == goal.c);
 
 	frontier.push(current_node);
@@ -665,21 +668,19 @@ list<Action> ComportamientoJugador::A_estrella(){
 	while(!frontier.empty() and !SolutionFound){
 		frontier.pop();
 		explored.insert(current_node);
+		if(current_node.st.sonambulo.f == goal.f and current_node.st.sonambulo.c == goal.c){
+			SolutionFound = true;
+		}else{
 
-		if(SonambuloEnVision(current_node.st)){
-			//Generar hijo actSON_FORWARD
-			nodoN3 child_SONforward = current_node;
-			child_SONforward = Aply_puntuacion_heuristica(actSON_FORWARD, current_node);
-			if(child_SONforward.st.sonambulo.f == goal.f and child_SONforward.st.sonambulo.c == goal.c){
-				child_SONforward.secuencia.push_back(actSON_FORWARD);
-				current_node = child_SONforward;
-				SolutionFound = true;
-			}else if(explored.find(child_SONforward) == explored.end()){
-				child_SONforward.secuencia.push_back(actSON_FORWARD);
-				frontier.push(child_SONforward);
-			}
+			if(SonambuloEnVision(current_node.st)){
+				//Generar hijo actSON_FORWARD
+				nodoN3 child_SONforward = current_node;
+				child_SONforward = Aply_puntuacion_heuristica(actSON_FORWARD, current_node);
+				if(explored.find(child_SONforward) == explored.end()){
+					child_SONforward.secuencia.push_back(actSON_FORWARD);
+					frontier.push(child_SONforward);
+				}
 
-			if(!SolutionFound){
 				//Generar hijo actSON_TURN_SL
 				nodoN3 child_SONturnl = current_node;
 				child_SONturnl = Aply_puntuacion_heuristica(actSON_TURN_SL,current_node);
@@ -694,33 +695,33 @@ list<Action> ComportamientoJugador::A_estrella(){
 					child_SONturnr.secuencia.push_back(actSON_TURN_SR);
 					frontier.push(child_SONturnr);
 				}
+				
 			}
-		}
 
-		//Generar hijo actForward
-		nodoN3 child_forward = current_node;
-		child_forward = Aply_puntuacion_heuristica(actFORWARD, current_node);
-		if(explored.find(child_forward) == explored.end()){
-			child_forward.secuencia.push_back(actFORWARD);
-			frontier.push(child_forward);
-		}
+			//Generar hijo actForward
+			nodoN3 child_forward = current_node;
+			child_forward = Aply_puntuacion_heuristica(actFORWARD, current_node);
+			if(explored.find(child_forward) == explored.end()){
+				child_forward.secuencia.push_back(actFORWARD);
+				frontier.push(child_forward);
+			}
+			
+			//Generar hijo actTurn_L
+			nodoN3 child_turnl = current_node;
+			child_turnl = Aply_puntuacion_heuristica(actTURN_L,current_node);
+			if(explored.find(child_turnl) == explored.end()){
+				child_turnl.secuencia.push_back(actTURN_L);
+				frontier.push(child_turnl);
+			}
+			//Generar hijo actTurn_R
+			nodoN3 child_turnr = current_node;
+			child_turnr = Aply_puntuacion_heuristica(actTURN_R,current_node);
+			if(explored.find(child_turnr) == explored.end()){
+				child_turnr.secuencia.push_back(actTURN_R);
+				frontier.push(child_turnr);
+			}
 		
-		//Generar hijo actTurn_L
-		nodoN3 child_turnl = current_node;
-		child_turnl = Aply_puntuacion_heuristica(actTURN_L,current_node);
-		if(explored.find(child_turnl) == explored.end()){
-			child_turnl.secuencia.push_back(actTURN_L);
-			frontier.push(child_turnl);
 		}
-		//Generar hijo actTurn_R
-		nodoN3 child_turnr = current_node;
-		child_turnr = Aply_puntuacion_heuristica(actTURN_R,current_node);
-		if(explored.find(child_turnr) == explored.end()){
-			child_turnr.secuencia.push_back(actTURN_R);
-			frontier.push(child_turnr);
-		}
-		
-
 		if(!SolutionFound and !frontier.empty()){
 			current_node = frontier.top();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
