@@ -541,8 +541,9 @@ list<Action> ComportamientoJugador::Dijkstra(){
 //calculo de la heuristica con las distancias del jugador al sonambulo y del sonambulo al objetivo
 float ComportamientoJugador::heuristica(const nodoN3& no){
 	float h = 0;
-	h = abs(no.st.jugador.f-no.st.sonambulo.f) + abs(no.st.jugador.c-no.st.sonambulo.c)*0.5;
-	h += max(abs(no.st.sonambulo.f-goal.f),abs(no.st.sonambulo.c-goal.c))*0.5;
+	h = ( (abs(no.st.jugador.f-no.st.sonambulo.f)>=3) ? abs(no.st.jugador.f-no.st.sonambulo.f)-3 : abs(no.st.jugador.f-no.st.sonambulo.f) 
+	+ (abs(no.st.jugador.c-no.st.sonambulo.c)>=3) ? abs(no.st.jugador.c-no.st.sonambulo.c)-3 : abs(no.st.jugador.c-no.st.sonambulo.c) )*0.3;
+	h += max(abs(no.st.sonambulo.f-goal.f),abs(no.st.sonambulo.c-goal.c))*0.7;
 	return h;
 }
 
