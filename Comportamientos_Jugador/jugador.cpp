@@ -62,7 +62,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 				break;
 				case 2: plan = Dijkstra();
 				break;
-				case 3: cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
+				case 3: plan = A_estrella();
 				break;
 			}
 			if(plan.size() > 0){
@@ -244,7 +244,7 @@ list<Action> ComportamientoJugador::AnchuraSoloJugador(){
 			current_node = frontier.front();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
 				frontier.pop_front();
-				current_node = frontier.front();
+				if(!frontier.empty()) current_node = frontier.front();
 			}
 		} 
 
@@ -414,7 +414,7 @@ list<Action> ComportamientoJugador::AnchuraSonambulo(){
 			current_node = frontier.front();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
 				frontier.pop_front();
-				current_node = frontier.front();
+				if(!frontier.empty()) current_node = frontier.front();
 			}
 		} 
 
@@ -430,6 +430,126 @@ list<Action> ComportamientoJugador::AnchuraSonambulo(){
 //puntuacion segun accion y casilla
 nodoN2 ComportamientoJugador::Aply_puntuacion(const Action& a, const nodoN2& no){
 	nodoN2 n_salida = no;
+	ubicacion sig_ubicacion;
+	
+	switch(a){
+		case actFORWARD:
+			sig_ubicacion = NextCasilla(no.st.jugador);
+			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion.f == no.st.sonambulo.f and sig_ubicacion.c == no.st.sonambulo.c)){
+				n_salida.st.jugador = sig_ubicacion;
+				switch(mapaResultado[no.st.jugador.f][no.st.jugador.c]){
+					case 'A': n_salida.coste += (no.bikini_j) ? 10 : 100; break;
+					case 'B': n_salida.coste += (no.zapatillas_j) ? 15 : 50; break;
+					case 'T': n_salida.coste += 2; break;
+					case 'K': n_salida.bikini_j = true; n_salida.zapatillas_j = false; n_salida.coste += 1; break;
+					case 'D': n_salida.zapatillas_j = true; n_salida.bikini_j = false; n_salida.coste += 1; break;
+					default: n_salida.coste += 1; break;
+				}
+			} 
+		break;
+		case actTURN_L:
+			n_salida.st.jugador.brujula = static_cast<Orientacion>((no.st.jugador.brujula + 6) % 8);
+			switch(mapaResultado[no.st.jugador.f][no.st.jugador.c]){
+				case 'A': n_salida.coste += (no.bikini_j) ? 5 : 25; break;
+				case 'B': n_salida.coste += (no.zapatillas_j) ? 1 : 5; break;
+				case 'T': n_salida.coste += 2; break;
+				default: n_salida.coste += 1; break;
+			}
+		break;
+		case actTURN_R:
+			n_salida.st.jugador.brujula = static_cast<Orientacion>((no.st.jugador.brujula + 2) % 8);
+			switch(mapaResultado[no.st.jugador.f][no.st.jugador.c]){
+				case 'A': n_salida.coste += (no.bikini_j) ? 5 : 25; break;
+				case 'B': n_salida.coste += (no.zapatillas_j) ? 1 : 5; break;
+				case 'T': n_salida.coste += 2; break;
+				default: n_salida.coste += 1; break;
+			}
+		break;
+	}
+	return n_salida;
+}
+
+template<typename T>
+struct Compare{
+    bool operator() (const T& a, const T& b) {
+        return (a > b);
+    }
+};
+
+//busqueda en anchura para jugador obteniendo lista de acciones dijkstra
+list<Action> ComportamientoJugador::Dijkstra(){
+	nodoN2 current_node;
+	priority_queue<nodoN2,vector<nodoN2>,Compare<nodoN2>> frontier;
+	set<nodoN2> explored;
+	list<Action> plan;
+	current_node.st = c_state;
+	current_node.coste = 0;
+	current_node.bikini_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'K') ? true : false;
+	current_node.bikini_s = (mapaResultado[current_node.st.sonambulo.f][current_node.st.sonambulo.c] == 'K') ? true : false;
+	current_node.zapatillas_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'D') ? true : false;
+	current_node.zapatillas_s = (mapaResultado[current_node.st.sonambulo.f][current_node.st.sonambulo.c] == 'D') ? true : false;
+	bool SolutionFound = (current_node.st.jugador.f == goal.f and current_node.st.jugador.c == goal.c);
+
+	frontier.push(current_node);
+
+	while(!frontier.empty() and !SolutionFound){
+		frontier.pop();
+		explored.insert(current_node);
+		if(current_node.st.jugador.f == goal.f and current_node.st.jugador.c == goal.c){
+			SolutionFound = true;
+		}else{
+			//Generar hijo actForward
+			nodoN2 child_forward = current_node;
+			child_forward = Aply_puntuacion(actFORWARD, current_node);
+			if(explored.find(child_forward) == explored.end()){
+				child_forward.secuencia.push_back(actFORWARD);
+				frontier.push(child_forward);
+			}
+			//Generar hijo actTurn_L
+			nodoN2 child_turnl = current_node;
+			child_turnl = Aply_puntuacion(actTURN_L,current_node);
+			if(explored.find(child_turnl) == explored.end()){
+				child_turnl.secuencia.push_back(actTURN_L);
+				frontier.push(child_turnl);
+			}
+			//Generar hijo actTurn_R
+			nodoN2 child_turnr = current_node;
+			child_turnr = Aply_puntuacion(actTURN_R,current_node);
+			if(explored.find(child_turnr) == explored.end()){
+				child_turnr.secuencia.push_back(actTURN_R);
+				frontier.push(child_turnr);
+			}
+		}	
+
+		if(!SolutionFound and !frontier.empty()){
+			current_node = frontier.top();
+			while(!frontier.empty() and explored.find(current_node) != explored.end()){
+				frontier.pop();
+				if(!frontier.empty()) current_node = frontier.top();
+			}
+		}
+		
+
+	}
+
+	if(SolutionFound) plan = current_node.secuencia;
+
+	return plan;
+}
+
+//-----------------------------------------------N3-----------------------------------------------
+//calculo de la heuristica con las distancias del jugador al sonambulo y del sonambulo al objetivo
+float ComportamientoJugador::heuristica(const nodoN3& no){
+	float h = 0;
+	h = ( (abs(no.st.jugador.f-no.st.sonambulo.f)>=3) ? abs(no.st.jugador.f-no.st.sonambulo.f)-3 : abs(no.st.jugador.f-no.st.sonambulo.f) 
+	+ (abs(no.st.jugador.c-no.st.sonambulo.c)>=3) ? abs(no.st.jugador.c-no.st.sonambulo.c)-3 : abs(no.st.jugador.c-no.st.sonambulo.c) )*0.3;
+	h += max(abs(no.st.sonambulo.f-goal.f),abs(no.st.sonambulo.c-goal.c))*0.7;
+	return h;
+}
+
+//puntuacion segun accion y casilla
+nodoN3 ComportamientoJugador::Aply_puntuacion_heuristica(const Action& a, const nodoN3& no){
+	nodoN3 n_salida = no;
 	ubicacion sig_ubicacion;
 
 	switch(a){
@@ -470,8 +590,8 @@ nodoN2 ComportamientoJugador::Aply_puntuacion(const Action& a, const nodoN2& no)
 			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion.f == no.st.jugador.f and sig_ubicacion.c == no.st.jugador.c)){
 				n_salida.st.sonambulo = sig_ubicacion;
 				switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
-					case 'A': n_salida.coste += (no.bikini_j) ? 10 : 100; break;
-					case 'B': n_salida.coste += (no.zapatillas_j) ? 15 : 50; break;
+					case 'A': n_salida.coste += (no.bikini_s) ? 10 : 100; break;
+					case 'B': n_salida.coste += (no.zapatillas_s) ? 15 : 50; break;
 					case 'T': n_salida.coste += 2; break;
 					case 'K': n_salida.bikini_s = true; n_salida.zapatillas_s = false; n_salida.coste += 1; break;
 					case 'D': n_salida.zapatillas_s = true; n_salida.bikini_s = false; n_salida.coste += 1; break;
@@ -482,81 +602,105 @@ nodoN2 ComportamientoJugador::Aply_puntuacion(const Action& a, const nodoN2& no)
 		case actSON_TURN_SL:
 			n_salida.st.sonambulo.brujula = static_cast<Orientacion>((no.st.sonambulo.brujula + 7) % 8);
 			switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
-				case 'A': n_salida.coste += (no.bikini_j) ? 2 : 7; break;
-				case 'B': n_salida.coste += (no.zapatillas_j) ? 1 : 3; break;
+				case 'A': n_salida.coste += (no.bikini_s) ? 2 : 7; break;
+				case 'B': n_salida.coste += (no.zapatillas_s) ? 1 : 3; break;
 				default: n_salida.coste += 1; break;
 			}
 		break;
 		case actSON_TURN_SR:
 			n_salida.st.sonambulo.brujula = static_cast<Orientacion>((no.st.sonambulo.brujula + 1) % 8);
+			switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
+				case 'A': n_salida.coste += (no.bikini_s) ? 2 : 7; break;
+				case 'B': n_salida.coste += (no.zapatillas_s) ? 1 : 3; break;
+				default: n_salida.coste += 1; break;
+			}
 		break;
 	}
+	n_salida.h = heuristica(n_salida);
 	return n_salida;
 }
-
-
-struct Compare {
-    bool operator() (const nodoN2& a, const nodoN2& b) {
-        return (a > b);
-    }
-};
-
 //busqueda en anchura para jugador obteniendo lista de acciones dijkstra
-list<Action> ComportamientoJugador::Dijkstra(){
-	nodoN2 current_node;
-	priority_queue<nodoN2,vector<nodoN2>,Compare> frontier;
-	set<nodoN2> explored;
+list<Action> ComportamientoJugador::A_estrella(){
+	nodoN3 current_node;
+	priority_queue<nodoN3,vector<nodoN3>,Compare<nodoN3>> frontier;
+	set<nodoN3> explored;
 	list<Action> plan;
 	current_node.st = c_state;
 	current_node.coste = 0;
-	current_node.bikini_j = current_node.bikini_s = current_node.zapatillas_j = current_node.zapatillas_s = false;
-	bool SolutionFound = (current_node.st.jugador.f == goal.f and current_node.st.jugador.c == goal.c);
+	current_node.h = heuristica(current_node);
+	current_node.bikini_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'K') ? true : false;
+	current_node.bikini_s = (mapaResultado[current_node.st.sonambulo.f][current_node.st.sonambulo.c] == 'K') ? true : false;
+	current_node.zapatillas_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'D') ? true : false;
+	current_node.zapatillas_s = (mapaResultado[current_node.st.sonambulo.f][current_node.st.sonambulo.c] == 'D') ? true : false;
+	bool SolutionFound = (current_node.st.sonambulo.f == goal.f and current_node.st.sonambulo.c == goal.c);
 
 	frontier.push(current_node);
 
 	while(!frontier.empty() and !SolutionFound){
 		frontier.pop();
 		explored.insert(current_node);
-
-		//Generar hijo actForward
-		nodoN2 child_forward = current_node;
-		child_forward = Aply_puntuacion(actFORWARD, current_node);
-		if(child_forward.st.jugador.f == goal.f and child_forward.st.jugador.c == goal.c){
-			child_forward.secuencia.push_back(actFORWARD);
-			current_node = child_forward;
+		if(current_node.st.sonambulo.f == goal.f and current_node.st.sonambulo.c == goal.c){
 			SolutionFound = true;
-		}else if(explored.find(child_forward) == explored.end()){
-			child_forward.secuencia.push_back(actFORWARD);
-			frontier.push(child_forward);
-		}
-		if(!SolutionFound){
+		}else{
+
+			if(SonambuloEnVision(current_node.st)){
+				//Generar hijo actSON_FORWARD
+				nodoN3 child_SONforward = current_node;
+				child_SONforward = Aply_puntuacion_heuristica(actSON_FORWARD, current_node);
+				if(explored.find(child_SONforward) == explored.end()){
+					child_SONforward.secuencia.push_back(actSON_FORWARD);
+					frontier.push(child_SONforward);
+				}
+
+				//Generar hijo actSON_TURN_SL
+				nodoN3 child_SONturnl = current_node;
+				child_SONturnl = Aply_puntuacion_heuristica(actSON_TURN_SL,current_node);
+				if(explored.find(child_SONturnl) == explored.end()){
+					child_SONturnl.secuencia.push_back(actSON_TURN_SL);
+					frontier.push(child_SONturnl);
+				}
+				//Generar hijo actSON_TURN_SR
+				nodoN3 child_SONturnr = current_node;
+				child_SONturnr = Aply_puntuacion_heuristica(actSON_TURN_SR,current_node);
+				if(explored.find(child_SONturnr) == explored.end()){
+					child_SONturnr.secuencia.push_back(actSON_TURN_SR);
+					frontier.push(child_SONturnr);
+				}
+				
+			}
+
+			//Generar hijo actForward
+			nodoN3 child_forward = current_node;
+			child_forward = Aply_puntuacion_heuristica(actFORWARD, current_node);
+			if(explored.find(child_forward) == explored.end()){
+				child_forward.secuencia.push_back(actFORWARD);
+				frontier.push(child_forward);
+			}
+			
 			//Generar hijo actTurn_L
-			nodoN2 child_turnl = current_node;
-			child_turnl = Aply_puntuacion(actTURN_L,current_node);
+			nodoN3 child_turnl = current_node;
+			child_turnl = Aply_puntuacion_heuristica(actTURN_L,current_node);
 			if(explored.find(child_turnl) == explored.end()){
 				child_turnl.secuencia.push_back(actTURN_L);
 				frontier.push(child_turnl);
 			}
 			//Generar hijo actTurn_R
-			nodoN2 child_turnr = current_node;
-			child_turnr = Aply_puntuacion(actTURN_R,current_node);
+			nodoN3 child_turnr = current_node;
+			child_turnr = Aply_puntuacion_heuristica(actTURN_R,current_node);
 			if(explored.find(child_turnr) == explored.end()){
 				child_turnr.secuencia.push_back(actTURN_R);
 				frontier.push(child_turnr);
 			}
-		}	
-
+		
+		}
 		if(!SolutionFound and !frontier.empty()){
 			current_node = frontier.top();
 			while(!frontier.empty() and explored.find(current_node) != explored.end()){
 				frontier.pop();
-				current_node = frontier.top();
+				if(!frontier.empty()) current_node = frontier.top();
 			}
 		}
-		
-
 	}
-
 	if(SolutionFound) plan = current_node.secuencia;
 
 	return plan;
