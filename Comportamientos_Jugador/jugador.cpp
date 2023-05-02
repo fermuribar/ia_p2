@@ -431,7 +431,7 @@ list<Action> ComportamientoJugador::AnchuraSonambulo(){
 nodoN2 ComportamientoJugador::Aply_puntuacion(const Action& a, const nodoN2& no){
 	nodoN2 n_salida = no;
 	ubicacion sig_ubicacion;
-
+	
 	switch(a){
 		case actFORWARD:
 			sig_ubicacion = NextCasilla(no.st.jugador);
@@ -462,36 +462,6 @@ nodoN2 ComportamientoJugador::Aply_puntuacion(const Action& a, const nodoN2& no)
 				case 'A': n_salida.coste += (no.bikini_j) ? 5 : 25; break;
 				case 'B': n_salida.coste += (no.zapatillas_j) ? 1 : 5; break;
 				case 'T': n_salida.coste += 2; break;
-				default: n_salida.coste += 1; break;
-			}
-		break;
-		case actSON_FORWARD:
-			sig_ubicacion = NextCasilla(no.st.sonambulo);
-			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion.f == no.st.jugador.f and sig_ubicacion.c == no.st.jugador.c)){
-				n_salida.st.sonambulo = sig_ubicacion;
-				switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
-					case 'A': n_salida.coste += (no.bikini_j) ? 10 : 100; break;
-					case 'B': n_salida.coste += (no.zapatillas_j) ? 15 : 50; break;
-					case 'T': n_salida.coste += 2; break;
-					case 'K': n_salida.bikini_s = true; n_salida.zapatillas_s = false; n_salida.coste += 1; break;
-					case 'D': n_salida.zapatillas_s = true; n_salida.bikini_s = false; n_salida.coste += 1; break;
-					default: n_salida.coste += 1; break;
-				}
-			} 
-		break;
-		case actSON_TURN_SL:
-			n_salida.st.sonambulo.brujula = static_cast<Orientacion>((no.st.sonambulo.brujula + 7) % 8);
-			switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
-				case 'A': n_salida.coste += (no.bikini_j) ? 2 : 7; break;
-				case 'B': n_salida.coste += (no.zapatillas_j) ? 1 : 3; break;
-				default: n_salida.coste += 1; break;
-			}
-		break;
-		case actSON_TURN_SR:
-			n_salida.st.sonambulo.brujula = static_cast<Orientacion>((no.st.sonambulo.brujula + 1) % 8);
-			switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
-				case 'A': n_salida.coste += (no.bikini_j) ? 2 : 7; break;
-				case 'B': n_salida.coste += (no.zapatillas_j) ? 1 : 3; break;
 				default: n_salida.coste += 1; break;
 			}
 		break;
@@ -567,12 +537,12 @@ list<Action> ComportamientoJugador::Dijkstra(){
 	return plan;
 }
 
-//-----------------------------------------------N2-----------------------------------------------
+//-----------------------------------------------N3-----------------------------------------------
 //calculo de la heuristica con las distancias del jugador al sonambulo y del sonambulo al objetivo
-int ComportamientoJugador::heuristica(const nodoN3& no){
-	int h = 0;
-	h = abs(no.st.jugador.f-no.st.sonambulo.f) + abs(no.st.jugador.c-no.st.sonambulo.c);
-	h += max(abs(no.st.sonambulo.f-goal.f),abs(no.st.sonambulo.c-goal.c));
+float ComportamientoJugador::heuristica(const nodoN3& no){
+	float h = 0;
+	h = abs(no.st.jugador.f-no.st.sonambulo.f) + abs(no.st.jugador.c-no.st.sonambulo.c)*0.5;
+	h += max(abs(no.st.sonambulo.f-goal.f),abs(no.st.sonambulo.c-goal.c))*0.5;
 	return h;
 }
 
@@ -619,8 +589,8 @@ nodoN3 ComportamientoJugador::Aply_puntuacion_heuristica(const Action& a, const 
 			if(CasillaTransitable(sig_ubicacion) and !(sig_ubicacion.f == no.st.jugador.f and sig_ubicacion.c == no.st.jugador.c)){
 				n_salida.st.sonambulo = sig_ubicacion;
 				switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
-					case 'A': n_salida.coste += (no.bikini_j) ? 10 : 100; break;
-					case 'B': n_salida.coste += (no.zapatillas_j) ? 15 : 50; break;
+					case 'A': n_salida.coste += (no.bikini_s) ? 10 : 100; break;
+					case 'B': n_salida.coste += (no.zapatillas_s) ? 15 : 50; break;
 					case 'T': n_salida.coste += 2; break;
 					case 'K': n_salida.bikini_s = true; n_salida.zapatillas_s = false; n_salida.coste += 1; break;
 					case 'D': n_salida.zapatillas_s = true; n_salida.bikini_s = false; n_salida.coste += 1; break;
@@ -631,16 +601,16 @@ nodoN3 ComportamientoJugador::Aply_puntuacion_heuristica(const Action& a, const 
 		case actSON_TURN_SL:
 			n_salida.st.sonambulo.brujula = static_cast<Orientacion>((no.st.sonambulo.brujula + 7) % 8);
 			switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
-				case 'A': n_salida.coste += (no.bikini_j) ? 2 : 7; break;
-				case 'B': n_salida.coste += (no.zapatillas_j) ? 1 : 3; break;
+				case 'A': n_salida.coste += (no.bikini_s) ? 2 : 7; break;
+				case 'B': n_salida.coste += (no.zapatillas_s) ? 1 : 3; break;
 				default: n_salida.coste += 1; break;
 			}
 		break;
 		case actSON_TURN_SR:
 			n_salida.st.sonambulo.brujula = static_cast<Orientacion>((no.st.sonambulo.brujula + 1) % 8);
 			switch(mapaResultado[no.st.sonambulo.f][no.st.sonambulo.c]){
-				case 'A': n_salida.coste += (no.bikini_j) ? 2 : 7; break;
-				case 'B': n_salida.coste += (no.zapatillas_j) ? 1 : 3; break;
+				case 'A': n_salida.coste += (no.bikini_s) ? 2 : 7; break;
+				case 'B': n_salida.coste += (no.zapatillas_s) ? 1 : 3; break;
 				default: n_salida.coste += 1; break;
 			}
 		break;

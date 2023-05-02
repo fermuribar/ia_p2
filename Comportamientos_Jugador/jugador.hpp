@@ -65,13 +65,15 @@ struct nodoN2{
   bool bikini_j, bikini_s, zapatillas_j, zapatillas_s;
 
   bool operator== (const nodoN2& n) const{
-    return (st == n.st);
+    return (st == n.st and bikini_j == n.bikini_j and zapatillas_j == n.zapatillas_j);
   }
 
   bool operator< (const nodoN2& n) const{
     if(st.jugador.f < n.st.jugador.f) return true;
     else if(st.jugador.f == n.st.jugador.f and st.jugador.c < n.st.jugador.c) return true;
     else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula < n.st.jugador.brujula) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and bikini_j < n.bikini_j) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and bikini_j == n.bikini_j and zapatillas_j < n.zapatillas_j) return true;
     else return false;
   }
 
@@ -84,12 +86,12 @@ struct nodoN2{
 struct nodoN3{
   state st;
   list<Action> secuencia;
-  int coste;
+  float coste;
   int h;
   bool bikini_j, bikini_s, zapatillas_j, zapatillas_s;
 
   bool operator== (const nodoN3& n) const{
-    return (st == n.st);
+    return (st == n.st and bikini_j == n.bikini_j and zapatillas_j == n.zapatillas_j and bikini_s == n.bikini_s and zapatillas_s == n.zapatillas_s);
   }
 
   bool operator< (const nodoN3& n) const{
@@ -99,6 +101,10 @@ struct nodoN3{
     else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f < n.st.sonambulo.f) return true;
     else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and st.sonambulo.c < n.st.sonambulo.c) return true;
     else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and st.sonambulo.c == n.st.sonambulo.c and st.sonambulo.brujula < n.st.sonambulo.brujula) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and st.sonambulo.c == n.st.sonambulo.c and st.sonambulo.brujula == n.st.sonambulo.brujula and bikini_j < n.bikini_j) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and st.sonambulo.c == n.st.sonambulo.c and st.sonambulo.brujula == n.st.sonambulo.brujula and bikini_j == n.bikini_j and bikini_s < n.bikini_s) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and st.sonambulo.c == n.st.sonambulo.c and st.sonambulo.brujula == n.st.sonambulo.brujula and bikini_j == n.bikini_j and bikini_s == n.bikini_s and zapatillas_j < n.zapatillas_j) return true;
+    else if(st.jugador.f == n.st.jugador.f and st.jugador.c == n.st.jugador.c and st.jugador.brujula == n.st.jugador.brujula and st.sonambulo.f == n.st.sonambulo.f and st.sonambulo.c == n.st.sonambulo.c and st.sonambulo.brujula == n.st.sonambulo.brujula and bikini_j == n.bikini_j and bikini_s == n.bikini_s and zapatillas_j == n.zapatillas_j and zapatillas_s < n.zapatillas_s) return true;
     else return false;
   }
 
@@ -158,7 +164,7 @@ class ComportamientoJugador : public Comportamiento {
 
     //______N3______
       //calculo de la heuristica con las distancias del jugador al sonambulo y del sonambulo al objetivo
-    int heuristica(const nodoN3& no);
+    float heuristica(const nodoN3& no);
       //puntuacion segun accion y casilla
     nodoN3 Aply_puntuacion_heuristica(const Action& a, const nodoN3& no);
       //busqueda en anchura para jugador obteniendo lista de acciones dijkstra
