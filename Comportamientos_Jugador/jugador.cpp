@@ -83,7 +83,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 		}
 
 	}else{
-		cout << "Pendiente de implementacion nivel " << sensores.nivel << endl;
+		cout << "¡Comenzando! Pendiente de implementacion nivel " << sensores.nivel << endl;
 	}
 
 	return accion;
