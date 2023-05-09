@@ -12,6 +12,7 @@
 ComportamientoJugador::ComportamientoJugador(unsigned int size) : Comportamiento(size) {
     // Inicializar Variables de Estado
 	hayPlan = false;
+	bien_posicionado = false;
 }
 
 
@@ -84,6 +85,22 @@ Action ComportamientoJugador::think(Sensores sensores){
 
 	}else{
 		cout << "¡Comenzando! Pendiente de implementacion nivel " << sensores.nivel << endl;
+		if(!bien_posicionado){
+			if(!sensores.vida and !sensores.colision){
+				if(sensores.posF == -1) accion = actWHEREIS;
+				else{
+					c_state.jugador.f = sensores.posF;
+					c_state.jugador.c = sensores.posC;
+					c_state.jugador.brujula = sensores.sentido;
+					c_state.sonambulo.f = sensores.SONposF;
+					c_state.sonambulo.c = sensores.SONposC;
+					c_state.sonambulo.brujula = sensores.SONsentido;
+				}
+			}else{
+				
+			}
+			
+		}
 	}
 
 	return accion;

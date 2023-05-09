@@ -170,6 +170,8 @@ class ComportamientoJugador : public Comportamiento {
       //busqueda en anchura para jugador obteniendo lista de acciones dijkstra
     list<Action> A_estrella();
 
+    //______N4______
+
     // Declarar Variables de Estado___________________________________________
 
     list<Action> plan;  //Almacena el plan en ejecución
@@ -177,6 +179,7 @@ class ComportamientoJugador : public Comportamiento {
 
     state c_state;    //estado actual
     ubicacion goal;     //ubicacion del objetivo
+    bool bien_posicionado; //variable que indica que c_state corresponde con las acciones
 };
 
 #endif
