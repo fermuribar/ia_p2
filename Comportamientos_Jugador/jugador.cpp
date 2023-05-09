@@ -158,7 +158,8 @@ Action ComportamientoJugador::think(Sensores sensores){
 				}else{
 					if(!hayPlan){
 						cout << "buscando un plan para encontrar la solucion" << endl;
-						plan = A_estrella_jugador();
+						//plan = A_estrella_jugador();
+						plan = A_estrella();
 						if(plan.size() > 0){
 							VisualizaPlan();
 							hayPlan = true;
@@ -178,7 +179,7 @@ Action ComportamientoJugador::think(Sensores sensores){
 						if(plan.size() == 0 and hayPlan){
 							cout << "Se completó el plan con exito" << endl;
 							hayPlan = false;
-							busco_son = false;
+							busco_son = true;
 						}else{
 							if(!hayPlan)cout << "Se necesita recarcular el plan" << endl;
 						}
@@ -831,28 +832,28 @@ bool ComportamientoJugador::SonambuloEnSolucion(const state& st){
 	bool sonambulosolucion = false;
 	switch (st.jugador.brujula){
 		case norte:
-			if(goal.c == st.jugador.c and goal.f == st.jugador.f-1){
+			if((busco_son) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f+1) : (goal.c == st.jugador.c and goal.f == st.jugador.f-1)){
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case este:
-			if(goal.c == st.jugador.c+1 and goal.f == st.jugador.f){
+			if((busco_son) ? (st.jugador.c == st.sonambulo.c-1 and st.jugador.f == st.sonambulo.f) : (goal.c == st.jugador.c+1 and goal.f == st.jugador.f)){
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case sur:
-			if(goal.c == st.jugador.c and goal.f == st.jugador.f+1){
+			if((busco_son) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f-1) : (goal.c == st.jugador.c and goal.f == st.jugador.f+1)){
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case oeste:
-			if(goal.c == st.jugador.c-1 and goal.f == st.jugador.f){
+			if((busco_son) ? (st.jugador.c == st.sonambulo.c+1 and st.jugador.f == st.sonambulo.f) : (goal.c == st.jugador.c-1 and goal.f == st.jugador.f)){
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
@@ -866,11 +867,20 @@ bool ComportamientoJugador::SonambuloEnSolucion(const state& st){
 void ComportamientoJugador::sigAccionFactible(Sensores sensores){
 	Action ac1 = plan.front();
 	bool plan_factible = true;
+	ubicacion x = NextCasilla(c_state.sonambulo);
 	
 	if(ac1 == actFORWARD){
 		if(sensores.superficie[2]!='_' or (sensores.terreno[2]=='A' and !bikini_j) or (sensores.terreno[2]=='B' and !zapatillas_j) or sensores.terreno[2]=='M' or sensores.terreno[2]=='P') 
 			plan_factible = false;
+
+		if(!busco_son){
+			if(ac1 == actSON_FORWARD){
+				if(mapaEntidades[x.f][x.c]!='_' or (mapaResultado[x.f][x.c]=='A' and !bikini_s) or (mapaResultado[x.f][x.c]=='B' and !zapatillas_s) or mapaResultado[x.f][x.c]=='M' or mapaResultado[x.f][x.c]=='P')
+				plan_factible = false;
+			}
+		}
 	}
+	
 	
 	if(!plan_factible){
 		while(plan.size()>0) plan.pop_front();
@@ -965,14 +975,14 @@ list<Action> ComportamientoJugador::A_estrella_jugador(){
 	current_node.h = heuristica2(current_node);
 	current_node.bikini_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'K') ? true : false;
 	current_node.zapatillas_j = (mapaResultado[current_node.st.jugador.f][current_node.st.jugador.c] == 'D') ? true : false;
-	bool SolutionFound = (busco_son) ? SonambuloEnVision(current_node.st) : SonambuloEnSolucion(current_node.st);
+	bool SolutionFound = SonambuloEnSolucion(current_node.st);
 
 	frontier.push(current_node);
 
 	while(!frontier.empty() and !SolutionFound){
 		frontier.pop();
 		explored.insert(current_node);
-		if((busco_son) ? SonambuloEnVision(current_node.st) : SonambuloEnSolucion(current_node.st)){
+		if(SonambuloEnSolucion(current_node.st)){
 			SolutionFound = true;
 		}else{
 
@@ -1011,4 +1021,116 @@ list<Action> ComportamientoJugador::A_estrella_jugador(){
 	if(SolutionFound) plan = current_node.secuencia;
 
 	return plan;
+}
+
+//funcion para poneral sonambulo en medio del plan
+void ComportamientoJugador::colocarSon(){
+	if(mapaConPlan[c_state.sonambulo.f][c_state.sonambulo.c]==1){
+		switch (c_state.jugador.brujula){
+			case norte:
+				switch (c_state.sonambulo.brujula){
+					case noreste:
+						plan_son.push_back(actSON_TURN_SL);
+					break;
+					case este:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case sureste:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case sur:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case suroeste:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case oeste:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case noroeste:
+						plan_son.push_back(actSON_TURN_SR);
+					break;
+				}
+			break;
+			case este:
+				switch (c_state.sonambulo.brujula){
+					case norte:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case noreste:
+						plan_son.push_back(actSON_TURN_SR);
+					break;
+					case sureste:
+						plan_son.push_back(actSON_TURN_SL);
+					break;
+					case sur:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case suroeste:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case oeste:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case noroeste:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+				}
+			break;
+			case sur:
+				switch (c_state.sonambulo.brujula){
+					case norte:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case noreste:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case este:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case sureste:
+						plan_son.push_back(actSON_TURN_SR);
+					break;
+					case suroeste:
+						plan_son.push_back(actSON_TURN_SL);
+					break;
+					case oeste:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case noroeste:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+				}
+			break;
+			case oeste:
+				switch (c_state.sonambulo.brujula){
+					case norte:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case noreste:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case este:
+						plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);plan_son.push_back(actSON_TURN_SL);
+					break;
+					case sureste:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case sur:
+						plan_son.push_back(actSON_TURN_SR);plan_son.push_back(actSON_TURN_SR);
+					break;
+					case suroeste:
+						plan_son.push_back(actSON_TURN_SR);
+					break;
+					case noroeste:
+						plan_son.push_back(actSON_TURN_SL);
+					break;
+				}
+			break;
+
+		}
+		sonColocado = true;
+	}else{
+		// if()
+	}
 }

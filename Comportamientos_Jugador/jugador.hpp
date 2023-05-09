@@ -183,16 +183,20 @@ class ComportamientoJugador : public Comportamiento {
     void act_mapas(Sensores sensores);
       //busqueda a* para jugador o sonambulo
     list<Action> A_estrella_jugador();
+      //funcion para poneral sonambulo en medio del plan
+    void colocarSon();
 
     // Declarar Variables de Estado___________________________________________
 
     list<Action> plan;  //Almacena el plan en ejecución
+    list<Action> plan_son;  //Almacena el plan en ejecución
     bool hayPlan;       //Si verdad indica que se está siguiendo un plan.
 
     state c_state;    //estado actual
     ubicacion goal;     //ubicacion del objetivo
     bool bien_posicionado; //variable que indica que c_state corresponde con las acciones
     bool busco_son;
+    bool sonColocado;
     bool zapatillas_j, zapatillas_s, bikini_j, bikini_s;
 };
 
