@@ -746,6 +746,7 @@ float ComportamientoJugador::heuristica2(const nodoN3& no){
 nodoN3 ComportamientoJugador::Aply_puntuacion_heuristica2(const Action& a, const nodoN3& no){
 	nodoN3 no2;
 	no2 = Aply_puntuacion_heuristica(a,no);
+	no2.h = heuristica2(no2);
 	return no2;
 }
 
