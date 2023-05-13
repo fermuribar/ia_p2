@@ -955,6 +955,8 @@ list<Action> ComportamientoJugador::A_estrella_jugador(){
 void ComportamientoJugador::bik_zap(){ 
 	if(mapaResultado[c_state.jugador.f][c_state.jugador.c] == 'K'){ bikini_j = true; zapatillas_j = false;}
 	if(mapaResultado[c_state.jugador.f][c_state.jugador.c] == 'D'){ zapatillas_j = true; bikini_j = false;}
+	if(mapaResultado[c_state.sonambulo.f][c_state.sonambulo.c] == 'K'){ bikini_s = true; zapatillas_s = false;}
+	if(mapaResultado[c_state.sonambulo.f][c_state.sonambulo.c] == 'D'){ zapatillas_s = true; bikini_s = false;}
 }
 
 Action ComportamientoJugador::com4(Sensores sensores){
