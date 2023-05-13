@@ -139,8 +139,6 @@ class ComportamientoJugador : public Comportamiento {
 
     //--------------Busqueda y subfunciones-----------------------------------
     //______N0______
-      //busca un estado en una lista de estados
-    //bool Find(const state& item, const list<nodoN0>& lista);
       //obtenfo cual es la casilla si abanzo segun su ubicacion
     ubicacion NextCasilla(const ubicacion& pos);
       //aplica una accion a un estado y obtiene otro
@@ -175,6 +173,8 @@ class ComportamientoJugador : public Comportamiento {
     //______N4______
       //calculo de la heuristica con las distancias del jugador al sonambulo o del sonambulo "jugador"  al objetivo
     float heuristica2(const nodoN3& no);
+          //puntuacion segun accion y casilla
+    nodoN3 Aply_puntuacion_heuristica2(const Action& a, const nodoN3& no);
       //true si el sonambulo se encuentra en la solucion
     bool SonambuloEnSolucion(const state& st);
       //se encarga de saber si la siguiente accion del plan es posible o no
@@ -183,6 +183,10 @@ class ComportamientoJugador : public Comportamiento {
     void act_mapas(Sensores sensores);
       //busqueda a* para jugador o sonambulo
     list<Action> A_estrella_jugador();
+      //actualiza el estado de lo s bikinis y zapatillas
+    void bik_zap();
+      //comportamiento para el nivel4 encapsulado
+    Action com4(Sensores sensores);
       //funcion para poneral sonambulo en medio del plan
     void colocarSon();
 
