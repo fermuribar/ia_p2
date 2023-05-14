@@ -36,9 +36,6 @@ ComportamientoJugador::ComportamientoJugador(unsigned int size) : Comportamiento
 	}
 }
 
-
-
-
 //THINK------------------------------------------------------------------------------------------------------------------
 
 //movimiento caballo
@@ -157,12 +154,9 @@ void ComportamientoJugador::VisualizaPlan(){
 	}
 }
 
-
-
 //___________________________________________Buesquedas___________________________________________
 
 //-----------------------------------------------N0-----------------------------------------------
-
 
 
 //obtenfo cual es la casilla si abanzo segun su ubicacion
@@ -796,11 +790,11 @@ void ComportamientoJugador::sigAccionFactible(Sensores sensores){
 		if(sensores.superficie[2]!='_' or (sensores.terreno[2]=='A' and !bikini_j) or (sensores.terreno[2]=='B' and !zapatillas_j) or sensores.terreno[2]=='M' or sensores.terreno[2]=='P') 
 			plan_factible = false;
 
-		if(!busco_son){
-			if(ac1 == actSON_FORWARD){
-				if(mapaEntidades[x.f][x.c]!='_' or (mapaResultado[x.f][x.c]=='A' and !bikini_s) or (mapaResultado[x.f][x.c]=='B' and !zapatillas_s) or mapaResultado[x.f][x.c]=='M' or mapaResultado[x.f][x.c]=='P')
-				plan_factible = false;
-			}
+	}
+	if(!busco_son){
+		if(ac1 == actSON_FORWARD){
+			if(mapaResultado[x.f][x.c]=='?' or (mapaResultado[x.f][x.c]=='A' and !bikini_s) or (mapaResultado[x.f][x.c]=='B' and !zapatillas_s) or mapaResultado[x.f][x.c]=='M' or mapaResultado[x.f][x.c]=='P')
+			plan_factible = false;
 		}
 	}
 	
@@ -1058,6 +1052,8 @@ Action ComportamientoJugador::com4(Sensores sensores){
 	}else{
 		//se ha producido un reset o una colision
 		bien_posicionado = false;
+		hayPlan = false;
+		busco_son = true;
 	}
 	return accion;
 }
