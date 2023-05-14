@@ -14,6 +14,9 @@ ComportamientoJugador::ComportamientoJugador(unsigned int size) : Comportamiento
 	hayPlan = false;
 	bien_posicionado = false;
 	busco_son = true;
+	busco_goal = false;
+	no_comprobar = false;
+	sonColocado = false;
 	zapatillas_j = zapatillas_s = bikini_j = bikini_s = false;
 	//defino el precipicio exteriror
 	for(int i = 0; i < mapaResultado.size(); i++){
@@ -895,10 +898,10 @@ list<Action> ComportamientoJugador::A_estrella_jugador(){
 	bool SolutionFound = SonambuloEnSolucion(current_node.st);
 
 	//hago el plan desde la posicion del sonambulo
-	if(!busco_son){
-		current_node = Aply_puntuacion_heuristica2(actFORWARD, current_node);
-		current_node.secuencia.push_back(actFORWARD);
-	}
+	// if(!busco_son){
+	// 	current_node = Aply_puntuacion_heuristica2(actFORWARD, current_node);
+	// 	current_node.secuencia.push_back(actFORWARD);
+	// }
 
 	frontier.push(current_node);
 
@@ -979,11 +982,18 @@ Action ComportamientoJugador::com4(Sensores sensores){
 			}
 		}else{
 			//Segmento bien posicionado
-			if(busco_son){
+			if(busco_son or busco_goal){
 				//plan para encontrar al sonambulo
 				if(!hayPlan){
 					cout << "buscando un plan para encontrar al sonambulo" << endl;
-					plan = A_estrella_jugador();
+					plan = A_estrella_jugador(); 
+					if(busco_son and busco_goal){
+						if(plan.size()>15){//no es viable A* //implementacion de area de funcionamiento de A*
+							while(plan.size()>0) plan.pop_front();
+							plan.push_back(actFORWARD);
+							no_comprobar = true;
+						}
+					}
 					if(plan.size() > 0){
 						VisualizaPlan();
 						hayPlan = true;
@@ -993,7 +1003,8 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					bik_zap();
 					if(plan.size() > 0){
 						cout << "Ejecutando la siguiente acción del plan si es posible" << endl;
-						sigAccionFactible(sensores);
+						if(!no_comprobar)sigAccionFactible(sensores);
+						no_comprobar = false;
 						if(hayPlan){
 							accion = plan.front();
 							c_state = apply(accion,c_state);
@@ -1003,10 +1014,27 @@ Action ComportamientoJugador::com4(Sensores sensores){
 
 					if(plan.size() == 0 and hayPlan){
 						cout << "Se completó el plan con exito" << endl;
-						goal.f = sensores.destinoF;
-						goal.c = sensores.destinoC;
-						hayPlan = false;
-						busco_son = false;
+						if(busco_son and !busco_goal){
+							goal.f = sensores.destinoF;
+							goal.c = sensores.destinoC;
+							hayPlan = false;
+							busco_son = false;
+							busco_goal = true;
+						}else if(!busco_son and busco_goal){ //busco la solucion
+							hayPlan = false;
+							busco_son = true;
+						}else{
+							if(c_state.jugador.f == goal.f and c_state.jugador.c == goal.c){
+								hayPlan = false;
+								busco_son = true;
+								busco_goal = false;
+							}else{
+								hayPlan = false;
+								busco_son = false;
+								busco_goal = false;	
+							}
+						}
+						
 					}else{
 						if(!hayPlan)cout << "Se necesita recarcular el plan" << endl;
 					}
@@ -1051,9 +1079,17 @@ Action ComportamientoJugador::com4(Sensores sensores){
 		
 	}else{
 		//se ha producido un reset o una colision
-		bien_posicionado = false;
-		hayPlan = false;
-		busco_son = true;
+		if(sensores.reset){
+			while(plan.size()>0) plan.pop_front();
+			bien_posicionado = false;
+			hayPlan = false;
+			busco_son = true;
+			busco_goal = false;
+		}else{
+			while(plan.size()>0) plan.pop_front();
+			bien_posicionado = false;
+			hayPlan = false;
+		}
 	}
 	return accion;
 }

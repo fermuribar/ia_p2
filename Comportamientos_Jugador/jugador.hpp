@@ -197,11 +197,15 @@ class ComportamientoJugador : public Comportamiento {
     bool hayPlan;       //Si verdad indica que se está siguiendo un plan.
 
     state c_state;    //estado actual
+    bool zapatillas_j, zapatillas_s, bikini_j, bikini_s;
     ubicacion goal;     //ubicacion del objetivo
     bool bien_posicionado; //variable que indica que c_state corresponde con las acciones
     bool busco_son;
+    bool busco_goal;
+    bool no_comprobar;
+
     bool sonColocado;
-    bool zapatillas_j, zapatillas_s, bikini_j, bikini_s;
+    
 };
 
 #endif
