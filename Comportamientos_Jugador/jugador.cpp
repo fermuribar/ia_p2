@@ -782,27 +782,48 @@ bool ComportamientoJugador::SonambuloEnSolucion(const state& st){
 	return sonambulosolucion;
 }
 
+bool list_iguales(const list<Action>&l1, const list<Action>&l2){
+	if(l1.size() != l2.size()) return false;
+
+	auto it1 = l1.begin();
+	auto it2 = l2.begin();
+
+	while(it1 != l1.end()){
+		if(*it1 != *it2) return false;
+		it1++;
+		it2++;
+	}
+	return true;
+}
+
 //se encarga de saber si la siguiente accion del plan es posible o no
 void ComportamientoJugador::sigAccionFactible(Sensores sensores){
 	Action ac1 = plan.front();
 	bool plan_factible = true;
 	ubicacion x = NextCasilla(c_state.sonambulo);
+	auto it = plan.begin();
 	
-	if(ac1 == actFORWARD){
-		if(sensores.superficie[2]!='_' or (sensores.terreno[2]=='A' and !bikini_j) or (sensores.terreno[2]=='B' and !zapatillas_j) or sensores.terreno[2]=='M' or sensores.terreno[2]=='P') 
-			plan_factible = false;
+	
+	if(!list_iguales(plan,plan_son)){
+		if(ac1 == actFORWARD){
+			if(sensores.superficie[2]!='_' or (sensores.terreno[2]=='A' and !bikini_j) or (sensores.terreno[2]=='B' and !zapatillas_j) or sensores.terreno[2]=='M' or sensores.terreno[2]=='P') 
+				plan_factible = false;
 
-	}
-	if(!busco_son){
-		if(ac1 == actSON_FORWARD){
-			if(mapaResultado[x.f][x.c]=='?' or (mapaResultado[x.f][x.c]=='A' and !bikini_s) or (mapaResultado[x.f][x.c]=='B' and !zapatillas_s) or mapaResultado[x.f][x.c]=='M' or mapaResultado[x.f][x.c]=='P')
-			plan_factible = false;
+		}
+		if(!busco_son){
+			if(ac1 == actSON_FORWARD){
+				if(mapaResultado[x.f][x.c]=='?' or (mapaResultado[x.f][x.c]=='A' and !bikini_s) or (mapaResultado[x.f][x.c]=='B' and !zapatillas_s) or mapaResultado[x.f][x.c]=='M' or mapaResultado[x.f][x.c]=='P')
+				plan_factible = false;
+			}
 		}
 	}
 	
-	
 	if(!plan_factible){
-		while(plan.size()>0) plan.pop_front();
+		while(plan_son.size()>0) plan_son.pop_front();
+		while(plan.size()>0){ 
+			plan_son.push_back(plan.front());
+			plan.pop_front();
+		}
 		hayPlan = false;
 	}
 
@@ -1071,7 +1092,7 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					}else{
 						if(!hayPlan){
 							cout << "Se necesita recarcular el plan" << endl;
-							busco_son = true;
+							
 						}
 					}
 				}
