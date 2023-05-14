@@ -752,28 +752,28 @@ bool ComportamientoJugador::SonambuloEnSolucion(const state& st){
 	bool sonambulosolucion = false;
 	switch (st.jugador.brujula){
 		case norte:
-			if((busco_son and !recargando) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f+1)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.f-1
+			if((busco_son and !recargando) ? /*(st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f+1)*/SonambuloEnVision(st): (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.f-1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case este:
-			if((busco_son and !recargando) ? (st.jugador.c == st.sonambulo.c-1 and st.jugador.f == st.sonambulo.f)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c+1
+			if((busco_son and !recargando) ? /*(st.jugador.c == st.sonambulo.c-1 and st.jugador.f == st.sonambulo.f)*/SonambuloEnVision(st) : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c+1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case sur:
-			if((busco_son and !recargando) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f-1)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //t.jugador.f+1
+			if((busco_son and !recargando) ? /*(st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f-1)*/ SonambuloEnVision(st) : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //t.jugador.f+1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case oeste:
-			if((busco_son and !recargando) ? (st.jugador.c == st.sonambulo.c+1 and st.jugador.f == st.sonambulo.f)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c-1
+			if((busco_son and !recargando) ? /*(st.jugador.c == st.sonambulo.c+1 and st.jugador.f == st.sonambulo.f)*/ SonambuloEnVision(st) : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c-1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
