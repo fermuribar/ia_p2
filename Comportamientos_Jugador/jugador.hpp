@@ -183,6 +183,8 @@ class ComportamientoJugador : public Comportamiento {
     void act_mapas(Sensores sensores);
       //busqueda a* para jugador o sonambulo
     list<Action> A_estrella_jugador();
+      //funcion para encontrar en el mapa el puntode carga mas cercano
+    ubicacion cargador_cercano();
       //actualiza el estado de lo s bikinis y zapatillas
     void bik_zap();
       //comportamiento para el nivel4 encapsulado

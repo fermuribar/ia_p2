@@ -969,6 +969,26 @@ list<Action> ComportamientoJugador::A_estrella_jugador(){
 	return plan;
 }
 
+//funcion para encontrar en el mapa el puntode carga mas cercano
+ubicacion ComportamientoJugador::cargador_cercano(){
+	int distancia_min = mapaResultado.size() * 2 , aux;;
+	ubicacion cargador;
+	cargador.f = cargador.c = -1; //devolvera -1 en caso de no encontrar ningun calgador
+	for(int f = 3; f < mapaResultado.size()-3; f++){
+		for(int c = 3; c < mapaResultado.size()-3; c++){
+			if(mapaResultado[f][c] == 'X' ){
+				aux = abs(c_state.jugador.f-f) + abs(c_state.jugador.c-c);
+				if(aux < distancia_min){
+					cargador.f = f;
+					cargador.c = c;
+					distancia_min = abs(c_state.jugador.f-f) + abs(c_state.jugador.c-c);
+				}
+			}
+		}
+	}
+	return cargador;
+}
+
 void ComportamientoJugador::bik_zap(){ 
 	if(mapaResultado[c_state.jugador.f][c_state.jugador.c] == 'K'){ bikini_j = true; zapatillas_j = false;}
 	if(mapaResultado[c_state.jugador.f][c_state.jugador.c] == 'D'){ zapatillas_j = true; bikini_j = false;}
@@ -1001,16 +1021,22 @@ Action ComportamientoJugador::com4(Sensores sensores){
 				bien_posicionado = true;
 			}
 		}else{
+			
 			//Segmento bien posicionado
 			if(busco_son or busco_goal){
 				//plan para encontrar al sonambulo
+				goal.f = sensores.destinoF;
+				goal.c = sensores.destinoC;
 				if(!hayPlan){
-					cout << "buscando un plan para encontrar al sonambulo" << endl;
+					//cout << "buscando un plan para encontrar al sonambulo" << endl;
 					plan = A_estrella_jugador(); 
 					if(busco_son and busco_goal){
-						if(plan.size()>20){//no es viable A* //implementacion de area de funcionamiento de A*
+						if(plan.size()>15){//no es viable A* //implementacion de area de funcionamiento de A*
 							while(plan.size()>0) plan.pop_front();
 							plan.push_back(actFORWARD);
+						}else{
+							while(plan.size()>0) plan.pop_front();
+							busco_son = busco_goal = false;//nuevo para ejecutar el estreya desde el goal
 						}
 					}
 					if(plan.size() > 0){
@@ -1021,7 +1047,7 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					act_mapas(sensores);
 					bik_zap();
 					if(plan.size() > 0){
-						cout << "Ejecutando la siguiente acción del plan si es posible" << endl;
+						//cout << "Ejecutando la siguiente acción del plan si es posible" << endl;
 						if(plan.size()>1)sigAccionFactible(sensores);
 						
 						if(hayPlan){
@@ -1036,36 +1062,34 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					}
 
 					if(plan.size() == 0 and hayPlan){
-						cout << "Se completó el plan con exito" << endl;
+						//cout << "Se completó el plan con exito" << endl;
+						
+						hayPlan = false;
 						if(busco_son and !busco_goal){
-							goal.f = sensores.destinoF;
-							goal.c = sensores.destinoC;
-							hayPlan = false;
 							busco_son = false;
 							busco_goal = true;
 						}else if(!busco_son and busco_goal){ //busco la solucion
-							hayPlan = false;
 							busco_son = true;
 						}else{
 							if(c_state.jugador.f == goal.f and c_state.jugador.c == goal.c){
-								hayPlan = false;
-								busco_son = true;
-								busco_goal = false;
+								// busco_son = true;
+								// busco_goal = false;
+								busco_son = false;
+								busco_goal = true;
 							}else{
-								hayPlan = false;
 								busco_son = false;
 								busco_goal = false;	
 							}
 						}
 						
 					}else{
-						if(!hayPlan)cout << "Se necesita recarcular el plan" << endl;
+						//if(!hayPlan)cout << "Se necesita recarcular el plan" << endl;
 					}
 				}
 			}else{
 				//plan para acompañar al sonambulo a la solucion
 				if(!hayPlan){
-					cout << "buscando un plan para encontrar la solucion" << endl;
+					//cout << "buscando un plan para encontrar la solucion" << endl;
 					//plan = A_estrella_jugador();
 					plan = A_estrella();
 					if(plan.size() > 0){
@@ -1076,7 +1100,7 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					act_mapas(sensores);
 					bik_zap();
 					if(plan.size() > 0){
-						cout << "Ejecutando la siguiente acción del plan si es posible" << endl;
+						//cout << "Ejecutando la siguiente acción del plan si es posible" << endl;
 						sigAccionFactible(sensores);
 						if(hayPlan){
 							accion = plan.front();
@@ -1086,12 +1110,14 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					}
 
 					if(plan.size() == 0 and hayPlan){
-						cout << "Se completó el plan con exito" << endl;
+						//cout << "Se completó el plan con exito" << endl;
+						// busco_son = true;
 						hayPlan = false;
-						busco_son = true;
+						busco_son = false;
+						busco_goal = true;
 					}else{
 						if(!hayPlan){
-							cout << "Se necesita recarcular el plan" << endl;
+							//cout << "Se necesita recarcular el plan" << endl;
 							
 						}
 					}
