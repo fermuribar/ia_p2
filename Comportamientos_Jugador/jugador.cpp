@@ -15,7 +15,6 @@ ComportamientoJugador::ComportamientoJugador(unsigned int size) : Comportamiento
 	bien_posicionado = false;
 	busco_son = true;
 	busco_goal = false;
-	no_comprobar = false;
 	sonColocado = false;
 	zapatillas_j = zapatillas_s = bikini_j = bikini_s = false;
 	//defino el precipicio exteriror
@@ -752,28 +751,28 @@ bool ComportamientoJugador::SonambuloEnSolucion(const state& st){
 	bool sonambulosolucion = false;
 	switch (st.jugador.brujula){
 		case norte:
-			if((busco_son) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f+1) : (goal.c == st.jugador.c and goal.f == st.jugador.f-1)){
+			if((busco_son) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f+1)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.f-1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case este:
-			if((busco_son) ? (st.jugador.c == st.sonambulo.c-1 and st.jugador.f == st.sonambulo.f) : (goal.c == st.jugador.c+1 and goal.f == st.jugador.f)){
+			if((busco_son) ? (st.jugador.c == st.sonambulo.c-1 and st.jugador.f == st.sonambulo.f)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c+1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case sur:
-			if((busco_son) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f-1) : (goal.c == st.jugador.c and goal.f == st.jugador.f+1)){
+			if((busco_son) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f-1)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //t.jugador.f+1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case oeste:
-			if((busco_son) ? (st.jugador.c == st.sonambulo.c+1 and st.jugador.f == st.sonambulo.f) : (goal.c == st.jugador.c-1 and goal.f == st.jugador.f)){
+			if((busco_son) ? (st.jugador.c == st.sonambulo.c+1 and st.jugador.f == st.sonambulo.f)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c-1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
@@ -991,7 +990,6 @@ Action ComportamientoJugador::com4(Sensores sensores){
 						if(plan.size()>15){//no es viable A* //implementacion de area de funcionamiento de A*
 							while(plan.size()>0) plan.pop_front();
 							plan.push_back(actFORWARD);
-							no_comprobar = true;
 						}
 					}
 					if(plan.size() > 0){
@@ -1003,11 +1001,15 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					bik_zap();
 					if(plan.size() > 0){
 						cout << "Ejecutando la siguiente acción del plan si es posible" << endl;
-						if(!no_comprobar)sigAccionFactible(sensores);
-						no_comprobar = false;
+						if(plan.size()>1)sigAccionFactible(sensores);
+						
 						if(hayPlan){
 							accion = plan.front();
-							c_state = apply(accion,c_state);
+							if(busco_goal and !busco_son and apply(accion,c_state).jugador.f == goal.f and apply(accion,c_state).jugador.c == goal.c){
+								accion = actIDLE;
+							}else{
+								c_state = apply(accion,c_state);
+							}
 							plan.pop_front();
 						}
 					}

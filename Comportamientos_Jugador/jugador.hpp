@@ -202,7 +202,6 @@ class ComportamientoJugador : public Comportamiento {
     bool bien_posicionado; //variable que indica que c_state corresponde con las acciones
     bool busco_son;
     bool busco_goal;
-    bool no_comprobar;
 
     bool sonColocado;
     
