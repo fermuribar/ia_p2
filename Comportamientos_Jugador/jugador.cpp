@@ -15,6 +15,7 @@ ComportamientoJugador::ComportamientoJugador(unsigned int size) : Comportamiento
 	bien_posicionado = false;
 	busco_son = true;
 	busco_goal = false;
+	recargando = false;
 	sonColocado = false;
 	zapatillas_j = zapatillas_s = bikini_j = bikini_s = false;
 	//defino el precipicio exteriror
@@ -751,28 +752,28 @@ bool ComportamientoJugador::SonambuloEnSolucion(const state& st){
 	bool sonambulosolucion = false;
 	switch (st.jugador.brujula){
 		case norte:
-			if((busco_son) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f+1)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.f-1
+			if((busco_son and !recargando) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f+1)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.f-1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case este:
-			if((busco_son) ? (st.jugador.c == st.sonambulo.c-1 and st.jugador.f == st.sonambulo.f)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c+1
+			if((busco_son and !recargando) ? (st.jugador.c == st.sonambulo.c-1 and st.jugador.f == st.sonambulo.f)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c+1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case sur:
-			if((busco_son) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f-1)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //t.jugador.f+1
+			if((busco_son and !recargando) ? (st.jugador.c == st.sonambulo.c and st.jugador.f == st.sonambulo.f-1)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //t.jugador.f+1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
 			}
 		break;
 		case oeste:
-			if((busco_son) ? (st.jugador.c == st.sonambulo.c+1 and st.jugador.f == st.sonambulo.f)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c-1
+			if((busco_son and !recargando) ? (st.jugador.c == st.sonambulo.c+1 and st.jugador.f == st.sonambulo.f)/*SonambuloEnVision(st)*/ : (goal.c == st.jugador.c and goal.f == st.jugador.f)){ //st.jugador.c-1
 				sonambulosolucion = true;
 			}else{
 				sonambulosolucion = false;
@@ -1016,14 +1017,61 @@ Action ComportamientoJugador::com4(Sensores sensores){
 				c_state.sonambulo.c = sensores.SONposC;
 				c_state.sonambulo.brujula = sensores.SONsentido;
 				//objetivo
-				goal.f = sensores.destinoF;
-				goal.c = sensores.destinoC;
+				if(!recargando){
+					goal.f = sensores.destinoF;
+					goal.c = sensores.destinoC;
+				}
 				act_mapas(sensores);
 				bik_zap();
 				bien_posicionado = true;
 			}
 		}else{
-			
+			if(sensores.bateria <= 250 and !recargando){
+				ubicacion bateria = cargador_cercano();
+				if(bateria.f !=-1){
+					hayPlan = false;
+					while(plan.size()>0) plan.pop_front();
+					recargando = true;
+					goal.f = bateria.f;
+					goal.c = bateria.c;
+				}
+			}else if(recargando){ //plan para recargar bateria
+				//plan para acompañar al sonambulo a la solucion
+				if(!hayPlan){
+					//cout << "buscando un plan para encontrar la solucion" << endl;
+					//plan = A_estrella_jugador();
+					plan = A_estrella_jugador(); 
+					if(plan.size() > 0){
+						VisualizaPlan();
+						hayPlan = true;
+					}
+				}else{
+					act_mapas(sensores);
+					bik_zap();
+					if(plan.size() > 0){
+						//cout << "Ejecutando la siguiente acción del plan si es posible" << endl;
+						sigAccionFactible(sensores);
+						if(hayPlan){
+							accion = plan.front();
+							c_state = apply(accion,c_state);
+							plan.pop_front();
+						}
+					}
+
+					if(plan.size() == 0 and hayPlan){
+						if(sensores.bateria >= 1500){
+							recargando = false;
+							hayPlan = false;
+							busco_goal = true;
+							busco_son = false;
+						}
+					}else{
+						if(!hayPlan){
+
+						}
+					}
+				}
+			}else
 			//Segmento bien posicionado
 			if(busco_son or busco_goal){
 				//plan para encontrar al sonambulo
