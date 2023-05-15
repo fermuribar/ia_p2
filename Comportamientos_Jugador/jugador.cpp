@@ -1059,7 +1059,7 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					}
 
 					if(plan.size() == 0 and hayPlan){
-						if(sensores.bateria >= 1500){
+						if(sensores.bateria >= 1250){
 							recargando = false;
 							hayPlan = false;
 							busco_goal = true;
@@ -1081,7 +1081,7 @@ Action ComportamientoJugador::com4(Sensores sensores){
 					//cout << "buscando un plan para encontrar al sonambulo" << endl;
 					plan = A_estrella_jugador(); 
 					if(busco_son and busco_goal){
-						if(plan.size()>15){//no es viable A* //implementacion de area de funcionamiento de A*
+						if(plan.size()>17){//no es viable A* //implementacion de area de funcionamiento de A*
 							while(plan.size()>0) plan.pop_front();
 							plan.push_back(actFORWARD);
 						}else{
