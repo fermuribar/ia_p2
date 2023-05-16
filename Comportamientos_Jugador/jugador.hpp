@@ -139,14 +139,14 @@ class ComportamientoJugador : public Comportamiento {
 
     //--------------Busqueda y subfunciones-----------------------------------
     //______N0______
-      //busca un estado en una lista de estados
-    //bool Find(const state& item, const list<nodoN0>& lista);
       //obtenfo cual es la casilla si abanzo segun su ubicacion
     ubicacion NextCasilla(const ubicacion& pos);
       //aplica una accion a un estado y obtiene otro
     state apply(const Action& a, const state& st);
       //comprueba si la casilla es transitable o no
-    bool inline CasillaTransitable(const ubicacion& x){ return (mapaResultado[x.f][x.c] != 'M' and mapaResultado[x.f][x.c] != 'P');}
+    bool inline CasillaTransitable(const ubicacion& x){ 
+      if(x.f<mapaResultado.size() and x.c<mapaResultado.size())return (mapaResultado[x.f][x.c] != 'M' and mapaResultado[x.f][x.c] != 'P');
+      else return false;}
       //busqueda en anchura para jugador obteniendo lista de acciones
     list<Action> AnchuraSoloJugador();
 
@@ -167,16 +167,47 @@ class ComportamientoJugador : public Comportamiento {
     float heuristica(const nodoN3& no);
       //puntuacion segun accion y casilla
     nodoN3 Aply_puntuacion_heuristica(const Action& a, const nodoN3& no);
-      //busqueda en anchura para jugador obteniendo lista de acciones dijkstra
+      //busqueda a* para jugador y sonambulo
     list<Action> A_estrella();
+
+    //______N4______
+      //calculo de la heuristica con las distancias del jugador al sonambulo o del sonambulo "jugador"  al objetivo
+    float heuristica2(const nodoN3& no);
+          //puntuacion segun accion y casilla
+    nodoN3 Aply_puntuacion_heuristica2(const Action& a, const nodoN3& no);
+      //true si el sonambulo se encuentra en la solucion
+    bool SonambuloEnSolucion(const state& st);
+      //se encarga de saber si la siguiente accion del plan es posible o no
+    void sigAccionFactible(Sensores sensores);
+      //Gestion de la vision y de la puntuacion por defecto de las casillas.
+    void act_mapas(Sensores sensores);
+      //busqueda a* para jugador o sonambulo
+    list<Action> A_estrella_jugador();
+      //funcion para encontrar en el mapa el puntode carga mas cercano
+    ubicacion cargador_cercano();
+      //actualiza el estado de lo s bikinis y zapatillas
+    void bik_zap();
+      //comportamiento para el nivel4 encapsulado
+    Action com4(Sensores sensores);
+      //funcion para poneral sonambulo en medio del plan
+    void colocarSon();
 
     // Declarar Variables de Estado___________________________________________
 
     list<Action> plan;  //Almacena el plan en ejecución
+    list<Action> plan_son;  //Almacena el plan en ejecución
     bool hayPlan;       //Si verdad indica que se está siguiendo un plan.
 
     state c_state;    //estado actual
+    bool zapatillas_j, zapatillas_s, bikini_j, bikini_s;
     ubicacion goal;     //ubicacion del objetivo
+    bool bien_posicionado; //variable que indica que c_state corresponde con las acciones
+    bool busco_son;
+    bool busco_goal;
+    bool recargando;
+
+    bool sonColocado;
+    
 };
 
 #endif
